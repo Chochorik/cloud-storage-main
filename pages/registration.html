@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script defer src="../js/registration.js"></script>
+    <link rel="stylesheet" href="../css/normalize.css">
+    <link rel="stylesheet" href="../css/fonts.css">
+    <link rel="stylesheet" href="../css/basic.css">
+    <link rel="stylesheet" href="../css/forms.css">
+    <title>Регистрация</title>
+</head>
+<body>
+    <section class="container">
+        <div class="registration__container">
+            <h1 class="registration__title">
+                Страница регистрации
+            </h1>
+            <div class="registration__result">
+                <p class="text-of-result"></p>
+            </div>
+            <form name="registration" id="registration__form" class="registration__form">
+                <label class="registration__label">
+                    <input class="input__login registration__input" type="text" placeholder="Логин" name="login">
+                </label>
+                <label class="registration__label">
+                    <input class="input__email registration__input" type="email" placeholder="Email" name="email">
+                </label>
+                <label class="registration__label">
+                    <input class="input__password registration__input" type="password" placeholder="Пароль" name="password" autocomplete="no">
+                </label>
+                <label class="registration__label">
+                    <input class="input__password_conf registration__input" type="password" placeholder="Повторите пароль" name="password_confirm" autocomplete="no">
+                </label>
+                <button type="submit" name="btn-register" class="registration__btn">
+                    Зарегистрироваться
+                </button>
+            </form>
+            <a href="/pages/auth.php" class="authorization__link">
+                <button class="authorization__btn">
+                    Войти
+                </button>
+            </a>
+        </div>
+    </section>
+</body>
+</html>

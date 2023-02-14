@@ -1,0 +1,58 @@
+html {
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+}
+
+*,
+*::before,
+*::after {
+    -webkit-box-sizing: inherit;
+    box-sizing: inherit;
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+h1, h2, h3, h4, h5, h6, p {
+    margin: 0;
+    padding: 0;
+}
+
+img {
+    max-width: 100%;
+}
+
+:root {
+    --usual-color: #0B5FA5;
+    --dark-color: #25547B;
+    --darkest-color: #043C6B;
+    --bright-color: #3F8FD2;
+    --light-color: #66A1D2;
+    --white-color: #fff;
+}
+
+body {
+    font-family: 'open_sans', sans-serif;
+    background-color: #fff;
+}
+
+button {
+    padding: 0;
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+}
+
+.container {
+    padding-left: 100px;
+    padding-right: 100px;
+    margin: 0 auto;
+}

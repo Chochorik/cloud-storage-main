@@ -1,37 +1,40 @@
-$('.btn-register').click(function (e) {
-    e.preventDefault();
+(() => {
+    const regForm = document.getElementById('registration__form');
+          
+    async function registration() {
+        const login = document.querySelector('.input__login').value,
+              email = document.querySelector('.input__email').value,
+              password = document.querySelector('.input__password').value,
+              passwordConfirm = document.querySelector('.input__password_conf').value,
+              message = document.querySelector('.text-of-result');
+        
+        message.textContent = '';
 
-    let login = $('input[name="login"]').val,
-        email = $('input[name="email"]').val,
-        password = $('input[name="password"]').val,
-        passwordConf = $('input[name="password_confirm"]').val;
+        const user = {
+            'login': login,
+            'email': email,
+            'password': password,
+            'password_confirm': passwordConfirm
+        };
 
-    let formData = new FormData();
-    formData.append('login', login);
-    formData.append('email', email);
-    formData.append('password', password);
-    formData.append('password_confirm', passwordConf);
+        const request = await fetch('../index.php/user/registration', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(user)
+        });
 
-    $.ajax({
-        url: 'index.php/user/registration', 
-        type: 'POST',
-        dataType: 'json',
-        processData: false,
-        contentType: false,
-        cache: false,
-        data: formData,
-        success(data) {
-            if (data.status) {
-                document.location.href = './auth.php';
-            } else {
-                if (data.type === 1) {
-                    data.fields.forEach(function (field) {
-                        $(`input[name="${field}}"]`).addClass('error');
-                    })
-                }
+        const data = await request.json();
 
-                $('.text-of-result').text(data.message);
-            }
+        if (data.status === true) {
+            document.location.href = '/pages/auth.php';
+        } else {
+            message.textContent = data.message;
         }
+    }
+
+    regForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        await registration();
     })
-});
+})();

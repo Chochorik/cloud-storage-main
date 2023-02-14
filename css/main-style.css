@@ -1,0 +1,28 @@
+.body {
+    position: relative;
+}
+
+/* header */
+.header {
+    margin-bottom: 30px;
+    padding-top: 20px;
+    padding-bottom: 20px;
+    background-color: var(--usual-color);
+    color: var(--white-color);
+}
+
+.header__container {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.header__logout {
+    color: var(--white-color);
+    font-size: medium;
+    font-weight: 500;
+}
+
+/* main */
