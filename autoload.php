@@ -1,6 +1,6 @@
 <?php
 
-function loadEntities($className)
+function loadEntities($className) : void
 {
     require_once './' . $className . '.php';
 }

@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="../css/fonts.css">
     <link rel="stylesheet" href="../css/basic.css">
     <link rel="stylesheet" href="../css/forms.css">
+    <link rel="icon" href="../media/cloud.svg" type="image/svg+xml">
     <title>Регистрация</title>
 </head>
 <body>
@@ -20,7 +21,7 @@
             <div class="registration__result">
                 <p class="text-of-result"></p>
             </div>
-            <form name="registration" id="registration__form" class="registration__form">
+            <form name="registration" id="registration__form" class="registration__form" action="/user/registration" method="post">
                 <label class="registration__label">
                     <input class="input__login registration__input" type="text" placeholder="Логин" name="login">
                 </label>
@@ -33,11 +34,11 @@
                 <label class="registration__label">
                     <input class="input__password_conf registration__input" type="password" placeholder="Повторите пароль" name="password_confirm" autocomplete="no">
                 </label>
-                <button type="submit" name="btn-register" class="registration__btn">
+                <button type="submit" class="registration__btn">
                     Зарегистрироваться
                 </button>
             </form>
-            <a href="/pages/auth.php" class="authorization__link">
+            <a href="/authorization" class="authorization__link">
                 <button class="authorization__btn">
                     Войти
                 </button>

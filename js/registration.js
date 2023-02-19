@@ -17,7 +17,7 @@
             'password_confirm': passwordConfirm
         };
 
-        const request = await fetch('../index.php/user/registration', {
+        const request = await fetch('http://www.cloud-storage.local/user/registration', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(user)
@@ -26,7 +26,8 @@
         const data = await request.json();
 
         if (data.status === true) {
-            document.location.href = '/pages/auth.php';
+            // document.location.href = '/pages/auth.php';
+            console.log(data);
         } else {
             message.textContent = data.message;
         }

@@ -13,7 +13,7 @@
             'password': password
         };
 
-        const request = await fetch('../index.php/user/authorization', {
+        const request = await fetch('http://www.cloud-storage.local/user/authorization', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(user)
@@ -22,7 +22,7 @@
         const data = await request.json();
 
         if (data.status === true) {
-            document.location.href = '/pages/main.php';
+            document.location.href = '/';
         } else {
             message.textContent = data.message;
         }

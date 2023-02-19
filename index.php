@@ -1,7 +1,8 @@
 <?php
 
+//error_reporting(~E_WARNING & ~E_NOTICE);
+
 header('Access-Control-Allow-Origin: *');
-header('Content-Type: application/json; charset=UTF-8');
 header('Access-Control-Allow-Methods: GET, POST, PATCH, DELETE');
 header('Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, X-Requested-With');
 
@@ -9,63 +10,31 @@ session_start();
 
 if (!isset($_SESSION['authorized'])) {
     $_SESSION['authorized'] = false;
-    $_SESSION['admin'] = false;
 }
 
 require_once './autoload.php';
 
 use controllers\User;
+use router\Application;
+use controllers\MainController;
+use router\Router;
 
-$urlList = [
-    '/' => 'home',
-    '/user/registration' => 'registration',
-    '/user/authorization' => 'authorization',
-    '/user/exit' => 'logout',
-];
+$router = new Router();
 
-$decodedValues = file_get_contents('php://input');
-$parts = parse_url($_SERVER['REQUEST_URI']);
-parse_str($parts['query'], $query);
-$logout = $query['logout'];
+$router->get('', [MainController::class, 'index']);
+$router->get('notFound', [MainController::class, 'notFound']);
+$router->get('authorization', [MainController::class, 'authorization']);
+$router->get('registration', [MainController::class, 'registration']);
+$router->get('recovery', [MainController::class, 'recoverPassword']);
+$router->get('user/logout', [User::class, 'logout']);
 
-// возвращает путь запроса
-function getRequestPath()
-{
-    $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+$router->post('user/registration', [User::class, 'registration']);
+$router->post('user/authorization', [User::class, 'authorization']);
 
-    return '/' . ltrim(str_replace('index.php', '', $path), '/');
+$app = new Application($router);
+$app->run($_SERVER['REQUEST_URI'], $_SERVER['REQUEST_METHOD']);
+
+if (http_response_code() === 404) {
+    header('location: /notFound');
+    exit();
 }
-
-function getMethod(array $urlList, $path)
-{
-    global $decodedValues, $logout;
-    foreach ($urlList as $route => $method) {
-        if ($path === $route) {
-            if ($method === 'registration') {
-                (new User)->registration($decodedValues);
-            } elseif ($method === 'authorization') {
-                (new User)->authorization($decodedValues);
-            } elseif ($method === 'home' && $_SESSION['authorized'] === false) {
-                header('location:' . '/pages/registration.html');
-                exit;
-            } elseif ($method === 'home' && $_SESSION['authorized'] === true) {
-                header('location:' . '/pages/main.php');
-                exit;
-            } elseif ($method === 'logout') {
-                (new User)->logout($logout);
-            }
-        }
-    }
-}
-
-$path = getRequestPath();
-
-if (!array_key_exists($path, $urlList)) {
-    header('location:' . '/pages/error.html');
-    exit;
-}
-
-getMethod($urlList, $path);
-
-
-

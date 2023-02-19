@@ -1,8 +1,3 @@
-<?php 
-
-session_start();
-?>
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -14,6 +9,7 @@ session_start();
     <link rel="stylesheet" href="../css/fonts.css">
     <link rel="stylesheet" href="../css/basic.css">
     <link rel="stylesheet" href="../css/forms.css">
+    <link rel="icon" href="../media/cloud.svg" type="image/svg+xml">
     <title>Авторизация</title>
 </head>
 <body>
@@ -37,14 +33,16 @@ session_start();
                 </button>
             </form>
             <div class="actions">
-                <a href="/pages/registration.html" class="registration__link">
+                <a href="/registration" class="registration__link">
                     <button class="registration__btn-link">
                         Зарегистрироваться
                     </button>
                 </a>
-                <button class="passowrd__recovery-btn">
-                    Забыли пароль?
-                </button>
+                <a href="/recovery" class="registration__link-recover-pass">
+                    <button class="passowrd__recovery-btn">
+                        Забыли пароль?
+                    </button>
+                </a>
             </div>
         </div>
     </section>

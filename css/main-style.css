@@ -19,10 +19,26 @@
     justify-content: space-between;
 }
 
+.header__title {
+    margin-right: 50px;
+}
+
 .header__logout {
     color: var(--white-color);
     font-size: medium;
     font-weight: 500;
+}
+
+.header__info {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+}
+
+.header__admin-panel {
+    margin-right: 20px;
+    color: var(--white-color);
 }
 
 /* main */

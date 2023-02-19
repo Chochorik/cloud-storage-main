@@ -1,3 +1,10 @@
+<?php
+
+if (!$_SESSION['authorized']) {
+    header('location: /authorization');
+}
+?>
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -9,18 +16,29 @@
     <link rel="stylesheet" href="../css/basic.css">
     <link rel="stylesheet" href="../css/fonts.css">
     <link rel="stylesheet" href="../css/main-style.css">
+    <link rel="icon" href="../media/cloud.svg" type="image/svg+xml">
     <title>Cloud Storage</title>
 </head>
 <body class="body">
     <header class="header">
         <div class="container header__container">
-            <h1 class="header__title">
-                Cloud Storage
-            </h1>
+            <div class="header__info">
+                <h1 class="header__title">
+                    Cloud Storage
+                </h1>
+                <p class="header__user">
+                    Пользователь: <?= $_SESSION['user'] ?>
+                </p>
+            </div>
             <div class="header__actions">
-                <a href="/user/exit?logout=true" class="header__logout">
+                <?php if ($_SESSION['admin'] === true):?>
+                    <button class="header__admin-panel">
+                        Панель управления
+                    </button>
+                <?php endif ?>
+                <button class="header__logout">
                     Выйти
-                </a>
+                </button>
             </div>
         </div>
     </header>

@@ -2,7 +2,8 @@
   registration & authorization
 */
 .registration__container,
-.auth__container {
+.auth__container,
+.recovery__container {
   display: flex;
   padding-top: 50px;
   padding-bottom: 50px;
@@ -12,7 +13,8 @@
 }
 
 .registration__form,
-.auth__form {
+.auth__form,
+.recovery__form {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -20,13 +22,15 @@
 }
 
 .registration__title,
-.auth__title {
+.auth__title,
+.recovery__title {
   margin-bottom: 30px;
   color: var(--darkest-color);
 }
 
 .registration__input,
-.auth__input {
+.auth__input,
+.recovery__input {
   min-width: 400px;
   height: 40px;
   border: 1px solid var(--dark-color);
@@ -34,12 +38,14 @@
 }
 
 .registration__label:not(:last-child),
-.auth__label:not(:last-child) {
+.auth__label:not(:last-child),
+.recovery__label:not(:last-child) {
   margin-bottom: 30px;
 }
 
 .registration__btn,
-.auth__btn {
+.auth__btn,
+.recovery__btn-submit {
   margin-bottom: 30px;
   padding: 10px 40px;
   color: var(--white-color);
@@ -48,7 +54,8 @@
   border-radius: 5px;
 }
 
-.authorization__btn {
+.authorization__btn,
+.recovery__btn {
   color: var(--usual-color);
 }
 

@@ -3,7 +3,7 @@
 namespace controllers;
 
 class User {
-    protected $userName, $email, $pass, $passConfirm, $role;
+    protected string $userName, $email, $pass, $passConfirm, $role;
     protected $connection;
 
     public function __construct()
@@ -12,15 +12,15 @@ class User {
             $this->connection = new \PDO('mysql:host=127.0.0.1;dbname=users;charset=utf8', 'root', 'root');
         } catch (\PDOException $exception) {
             http_response_code(418);
+            echo json_encode($exception->getMessage());
         }
 
         $this->role = 'user';
     }
 
-    public function registration($array)
+    public function registration()
     {
-        $user = json_decode($array, true);
-
+        $user = json_decode(file_get_contents('php://input'), true);
         $this->userName = $user['login'];
         $this->email = $user['email'];
         $this->pass = $user['password'];
@@ -128,8 +128,9 @@ class User {
         }
     }
 
-    public function authorization($array) {
-        $user = json_decode($array, true);
+    public function authorization()
+    {
+        $user = json_decode(file_get_contents('php://input'), true);
 
         $this->userName = $user['login'];
         $this->pass = $user['password'];
@@ -148,20 +149,32 @@ class User {
                 if (count($result) === 1) {
                     $hashed_password = $result[0]['pass_hash'];
                     if (password_verify($this->pass, $hashed_password)) {
-                        $response = [
-                            "status" => true,
-                            "message" => 'Вы успешно вошли'
-                        ];
+                        $token = $this->connection->prepare("UPDATE `users_list` SET `session` = :session WHERE `login` = :login");
 
-                        $_SESSION['authorized'] = true;
-                        $_SESSION['user'] = $this->userName;
-                        setcookie('user', $_SESSION['user'], time() + 3600 /* срок действия 1 час */);
+                        $token->bindValue('login', $this->userName);
+                        $token->bindValue('session', session_id());
 
-                        if ($result[0]['login'] === 'Admin') {
-                            $_SESSION['admin'] = true;
+                        if ($token->execute()) {
+                            if ($result[0]['login'] === 'Admin') {
+                                $_SESSION['admin'] = true;
+                            } else {
+                                $_SESSION['admin'] = false;
+                            }
+
+                            $_SESSION['authorized'] = true;
+                            $_SESSION['user'] = $this->userName;
+
+                            http_response_code(200);
+
+                            $response = [
+                                "status" => true,
+                                "message" => 'Вы успешно вошли',
+                                "user" => $this->userName,
+                                "token" => session_id()
+                            ];
+
+                            echo json_encode($response);
                         }
-
-                        echo json_encode($response);
                     } else {
                         $response = [
                             "status" => false,
@@ -199,13 +212,48 @@ class User {
         }
     }
 
-    public function logout($logout)
+    public function logout()
     {
-        if ($logout === true) {
-            unset($_SESSION['authorized']);
-            session_destroy();
-            header('location:' . '/auth.php');
-            exit;
+        $token = session_id();
+
+        $statement = $this->connection->prepare("SELECT * FROM `users_list` WHERE `login` = :login AND `session` = :token");
+
+        $statement->bindValue('login', $_SESSION['user']);
+        $statement->bindValue('token', $token);
+
+        if ($statement->execute()) {
+            $result = $statement->fetchAll(\PDO::FETCH_ASSOC);
+
+            if (count($result) > 0) {
+                $deleteToken = $this->connection->prepare("UPDATE `users_list` SET `session` = null WHERE `login` = :login");
+
+                $deleteToken->bindValue('login', $_SESSION['user']);
+
+                if ($deleteToken->execute()) {
+                    session_unset();
+                    session_destroy();
+
+                    $response = [
+                        "status" => true,
+                        "message" => 'Вы успешно вышли'
+                    ];
+
+                    echo json_encode($response);
+                }
+            } else {
+                $response = [
+                    "status" => false,
+                    "message" => 'Что-то пошло не так...'
+                ];
+
+                echo json_encode($response);
+                die();
+            }
         }
+    }
+
+    public function resetPassword()
+    {
+
     }
 }
