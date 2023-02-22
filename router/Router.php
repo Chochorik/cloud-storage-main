@@ -15,7 +15,7 @@ class Router {
         $this->addRoute('POST', $path, $callback);
     }
 
-    public function patch($path, $callback)
+    public function put($path, $callback)
     {
         $this->addRoute('PATCH', $path, $callback);
     }

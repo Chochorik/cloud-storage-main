@@ -26,9 +26,10 @@
         const data = await request.json();
 
         if (data.status === true) {
-            // document.location.href = '/pages/auth.php';
-            console.log(data);
+            message.style = 'color: var(--usual-color)';
+            message.textContent = data.message; 
         } else {
+            message.style = 'color: #FF4040';
             message.textContent = data.message;
         }
     }

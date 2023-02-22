@@ -1,0 +1,12 @@
+{
+    "name": "drnik/cloud-storage",
+    "autoload": {
+        "psr-4": {
+            "Drnik\\CloudStorage\\": "src/"
+        }
+    },
+    "require": {
+        "phpmailer/phpmailer": "^6.7",
+      "ext-pdo": "*"
+    }
+}

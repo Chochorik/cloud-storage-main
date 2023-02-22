@@ -59,7 +59,8 @@
   color: var(--usual-color);
 }
 
-.registration__result {
+.registration__result,
+.recovery__result {
   margin-bottom: 10px;
 }
 

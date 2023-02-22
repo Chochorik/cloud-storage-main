@@ -37,7 +37,14 @@ class Route {
 
     public function run($uri = null)
     {
-        $params = array();
+        $id = parse_url($_SERVER['REQUEST_URI']);
+
+        $exp = explode("/", $id['path']);
+
+        $replace = preg_replace("/&.*/", '', end($exp));
+        $params[] = [
+            $replace
+        ];
 
         return call_user_func_array($this->callback, $params);
     }

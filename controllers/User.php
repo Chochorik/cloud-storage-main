@@ -2,6 +2,10 @@
 
 namespace controllers;
 
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\SMTP;
+use PHPMailer\PHPMailer\Exception;
+
 class User {
     protected string $userName, $email, $pass, $passConfirm, $role;
     protected $connection;
@@ -25,7 +29,6 @@ class User {
         $this->email = $user['email'];
         $this->pass = $user['password'];
         $this->passConfirm = $user['password_confirm'];
-        $role = $this->role;
 
         if ($this->userName !== '') {
             $pattern = '/^[a-z0-9-_]+$/i';
@@ -33,6 +36,15 @@ class User {
             if (preg_match($pattern, $this->userName)) {
                 $statement = $this->connection->prepare("SELECT * FROM `users_list` WHERE `login` = :login");
                 $statement->bindValue('login', $this->userName);
+
+                if (strlen($this->userName) > 30) {
+                    $response = [
+                        "message" => 'Логин слишком длинный! (не более 30 символов)'
+                    ];
+
+                    echo json_encode($response);
+                    exit;
+                }
 
                 $statement->execute();
 
@@ -80,6 +92,16 @@ class User {
             && $this->passConfirm !== ''
             && ($this->pass === $this->passConfirm)) {
 
+            if (strlen($this->pass) > 30) {
+                $response = [
+                    "status" => false,
+                    "message" => 'Длина пароля слишком длинная! (не более 30 символов)'
+                ];
+
+                echo json_encode($response);
+                exit;
+            }
+
             $statement = $this->connection->prepare("INSERT INTO `users_list`(`id`, `login`, `email`, `pass_hash`, `role`) VALUES (:id, :login, :email, :hash, :role)");
 
             $pass = password_hash($this->pass, PASSWORD_BCRYPT);
@@ -87,17 +109,17 @@ class User {
             $statement->bindValue('id', null);
             $statement->bindValue('login', $this->userName);
             $statement->bindValue('email', $this->email);
-            $statement->bindValue('role', $role);
+            $statement->bindValue('role', $this->role);
             $statement->bindValue('hash', $pass);
 
-            $statement->execute();
+            if ($statement->execute()) {
+                $response = [
+                    "status" => true,
+                    "message" => 'Вы были успешно зарегистрированы',
+                ];
 
-            $response = [
-                "status" => true,
-                "message" => 'Вы были успешно зарегистрированы',
-            ];
-
-            echo json_encode($response);
+                echo json_encode($response);
+            }
         } else if ($this->userName === ''
                    || $this->email === ''
                    || $this->pass === ''
@@ -149,6 +171,7 @@ class User {
                 if (count($result) === 1) {
                     $hashed_password = $result[0]['pass_hash'];
                     if (password_verify($this->pass, $hashed_password)) {
+                        session_start();
                         $token = $this->connection->prepare("UPDATE `users_list` SET `session` = :session WHERE `login` = :login");
 
                         $token->bindValue('login', $this->userName);
@@ -214,6 +237,8 @@ class User {
 
     public function logout()
     {
+        session_start();
+
         $token = session_id();
 
         $statement = $this->connection->prepare("SELECT * FROM `users_list` WHERE `login` = :login AND `session` = :token");
@@ -229,9 +254,9 @@ class User {
 
                 $deleteToken->bindValue('login', $_SESSION['user']);
 
-                if ($deleteToken->execute()) {
-                    session_unset();
-                    session_destroy();
+                if ($deleteToken->execute() && session_status() == PHP_SESSION_ACTIVE) {
+                    unset($_SESSION);
+                    $result = session_destroy();
 
                     $response = [
                         "status" => true,
@@ -254,6 +279,45 @@ class User {
 
     public function resetPassword()
     {
+        $post = json_decode(file_get_contents('php://input'), true);
 
+        $login = $post['login'];
+
+        if ($login === '') {
+            $response = [
+                "status" => false,
+                "message" => 'Заполните все поля!'
+            ];
+
+            echo json_encode($response);
+            exit;
+        }
+
+        $statement = $this->connection->prepare("SELECT * FROM `users_list` WHERE `login` = :login");
+
+        $statement->bindValue('login', $login);
+
+        if ($statement->execute()) {
+            $result = $statement->fetchAll(\PDO::FETCH_ASSOC);
+
+            if (count($result) > 0) {
+                $email = $result[0]['email'];
+
+                $response = [
+                    "status" => true,
+                    "message" => $email
+                ];
+
+                echo json_encode($response);
+            } else {
+                $response = [
+                    "status" => false,
+                    "message" => 'Пользователя с таким логином не найдено!'
+                ];
+
+                echo json_encode($response);
+                exit;
+            }
+        }
     }
 }

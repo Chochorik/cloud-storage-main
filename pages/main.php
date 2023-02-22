@@ -1,5 +1,7 @@
 <?php
 
+session_start();
+
 if (!$_SESSION['authorized']) {
     header('location: /authorization');
 }
@@ -32,9 +34,11 @@ if (!$_SESSION['authorized']) {
             </div>
             <div class="header__actions">
                 <?php if ($_SESSION['admin'] === true):?>
-                    <button class="header__admin-panel">
-                        Панель управления
-                    </button>
+                    <a href="/admin/panel">
+                        <button class="header__admin-panel">
+                            Панель управления
+                        </button>
+                    </a>
                 <?php endif ?>
                 <button class="header__logout">
                     Выйти

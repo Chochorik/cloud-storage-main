@@ -1,6 +1,7 @@
 (() => {
     const logoutBtn = document.querySelector('.header__logout');
-    const fff = document.querySelector('.main__section');
+    const mainSection = document.querySelector('.main__section');
+    const adminPanelBtn = document.querySelector('.header__admin-panel');
 
     async function logout() {
         const request = await fetch('http://www.cloud-storage.local/user/logout');
