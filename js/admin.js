@@ -18,10 +18,8 @@
         $userEmail.textContent = user.email;
         $userRole.textContent = user.role;
 
-        $updateBtn = await createUpdateBtn(user);
-
-        $userActions.append($updateBtn);
-        $userActions.append(createDeleteBtn(user));
+        $userActions.append(await createUpdateBtn(user));
+        $userActions.append(await createDeleteBtn(user));
 
         $userTR.append($userId);
         $userTR.append($userLogin);
@@ -89,11 +87,13 @@
         $button.addEventListener('click', async function (e) {
             e.preventDefault();
 
+            $confirmBtn.dataset.id = $button.dataset.id;
+
             const request = await fetch(`http://www.cloud-storage.local/admin/users/${$button.dataset.id}`);
             const data = await request.json();
     
             if (data.status) {
-                array = data.user;
+                const array = data.user;
     
                 $id.value = array['id'];
                 $login.value = array['login'];
@@ -108,18 +108,32 @@
         $confirmBtn.addEventListener('click', async function(e) {
             e.preventDefault();
 
-            const request = await fetch(`http://www.cloud-storage.local/admin/users/${$button.dataset.id}`, {
+            const $error = document.querySelector('.modal__message');
+
+            const request = await fetch(`http://www.cloud-storage.local/admin/users/${$button.dataset.id}`);
+            const data = await request.json();
+
+            const array = data.user;
+
+            const updateRequest = await fetch(`http://www.cloud-storage.local/admin/users/${$confirmBtn.dataset.id}`, {
                 method: 'PUT',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({
                     id: $id.value,
                     login: $login.value,
                     email: $email.value,
-                    role: $role.value
+                    role: $role.value,
+                    oldData: array
                 })
             })
 
-            const data = await request.json();
+            const newdata = await updateRequest.json();
+
+            if (newdata.status) {
+                document.location.reload();
+            } else {
+                $error.textContent = newdata.message;
+            }
         })
 
         $closeModal.addEventListener('click', function (e) {
@@ -132,16 +146,22 @@
         return $button;
     }
 
-    function createDeleteBtn(user) {
-        const $button = document.createElement('button'),
-            id = user.id;
+    async function createDeleteBtn(user) {
+        const $button = document.createElement('button');
+
+        $button.dataset.id = user.id;
 
         const $modal = document.querySelector('.modal__delete'),
             $closeModal = document.querySelector('.modal__cross_delete'),
-            $confirmBtn = document.querySelector('.modal__confirm-delete-btn');
+            $confirmBtn = document.querySelector('.modal__confirm-delete-btn'),
+            $errorBlock = document.querySelector('.modal__errors');
 
         $button.addEventListener('click', function (e) {
             e.preventDefault();
+
+            $errorBlock.textContent = '';
+
+            $confirmBtn.dataset.id = $button.dataset.id;
 
             $modal.classList.add('modal_active');
             $overlay.classList.add('modal_active');
@@ -154,10 +174,24 @@
             $overlay.classList.remove('modal_active');
         })
 
+        $confirmBtn.addEventListener('click', async function(e) {
+            e.preventDefault();
+
+            const request = await fetch(`http://www.cloud-storage.local/admin/users/${$confirmBtn.dataset.id}`, {
+                method: 'DELETE'
+            })
+
+            const data = await request.json();
+
+            if (data.status) {
+                document.location.reload();
+            } else {
+                $errorBlock.textContent = data.message;
+            }
+        })
+
         $button.className = 'admin__delete-btn';
         $button.textContent = 'Удалить';
-
-        $button.dataset.user = id;
 
         return $button;
     }

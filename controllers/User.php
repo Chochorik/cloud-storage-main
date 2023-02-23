@@ -34,9 +34,6 @@ class User {
             $pattern = '/^[a-z0-9-_]+$/i';
 
             if (preg_match($pattern, $this->userName)) {
-                $statement = $this->connection->prepare("SELECT * FROM `users_list` WHERE `login` = :login");
-                $statement->bindValue('login', $this->userName);
-
                 if (strlen($this->userName) > 30) {
                     $response = [
                         "message" => 'Логин слишком длинный! (не более 30 символов)'
@@ -45,6 +42,9 @@ class User {
                     echo json_encode($response);
                     exit;
                 }
+
+                $statement = $this->connection->prepare("SELECT * FROM `users_list` WHERE `login` = :login");
+                $statement->bindValue('login', $this->userName);
 
                 $statement->execute();
 

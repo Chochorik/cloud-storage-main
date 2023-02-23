@@ -87,19 +87,19 @@ if (!$_SESSION['admin']) {
             <form class="modal__update">
                 <label class="modal__label">
                     ID
-                    <input class="modal__input input__id" type="number" placeholder="ID">
+                    <input class="modal__input input__id" type="number" placeholder="ID" name="id">
                 </label>
                 <label class="modal__label">
                     Login
-                    <input class="modal__input input__login" type="text" placeholder="Логин">
+                    <input class="modal__input input__login" type="text" placeholder="Логин" name="login">
                 </label>
                 <label class="modal__label">
                     Email
-                    <input class="modal__input input__email" type="email" placeholder="Email">
+                    <input class="modal__input input__email" type="email" placeholder="Email" name="email">
                 </label>
                 <label class="modal__label">
                     Role
-                    <input class="modal__input input__role" type="text" placeholder="Роль">
+                    <input class="modal__input input__role" type="text" placeholder="Роль" name="role">
                 </label>
             </form>
             <button class="modal__confirm-btn">
@@ -111,8 +111,12 @@ if (!$_SESSION['admin']) {
             <svg class="modal__cross modal__cross_delete" width="29" height="29" viewBox="0 0 29 29" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path fill-rule="evenodd" clip-rule="evenodd" d="M22.2333 7.73333L21.2666 6.76666L14.4999 13.5334L7.73324 6.7667L6.76658 7.73336L13.5332 14.5L6.7666 21.2667L7.73327 22.2333L14.4999 15.4667L21.2666 22.2334L22.2332 21.2667L15.4666 14.5L22.2333 7.73333Z" fill="#B0B0B0" />
             </svg>
+            <h2 class="modal__title">
+                Подтверждение удаления пользователя
+            </h2>
+            <p class="modal__errors"></p>
             <button class="modal__confirm-delete-btn">
-                Изменить
+                Удалить
             </button>
         </div>
         <!-- Подложка под модальным окном -->

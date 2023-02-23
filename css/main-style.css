@@ -174,3 +174,27 @@
     flex-direction: column;
     color: var(--bright-color);
 }
+
+.modal__delete {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 200px;
+}
+
+.modal__confirm-delete-btn {
+    padding: 10px 30px;
+    color: var(--white-color);
+    background-color: var(--usual-color);
+    border: 2px solid var(--darkest-color);
+    border-radius: 5px;
+}
+
+.modal__errors {
+    color: #FF4040;
+}
+
+.modal__message {
+    color: #FF4040;
+}
