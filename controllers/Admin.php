@@ -12,7 +12,6 @@ class Admin {
         } catch (\PDOException $exception) {
             echo json_encode($exception->getMessage());
         }
-
     }
 
     // проверка пользователя на права администратора
