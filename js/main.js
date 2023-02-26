@@ -1,7 +1,11 @@
 (() => {
-    const logoutBtn = document.querySelector('.header__logout');
-    const mainSection = document.querySelector('.main__section');
-    const adminPanelBtn = document.querySelector('.header__admin-panel');
+    const $logoutBtn = document.querySelector('.header__logout'),
+          $mainSection = document.querySelector('.main__section'),
+          $menuBtn = document.querySelector('.main__menu-btn'),
+          $menu = document.querySelector('.main__list');
+
+    const $uploadFileBtn = document.getElementById('upload-file'),
+          $createDirBtn = document.getElementById('create-dir');
 
     async function logout() {
         const request = await fetch('http://www.cloud-storage.local/user/logout');
@@ -15,9 +19,16 @@
         }
     }
 
-    logoutBtn.addEventListener('click', async function(e) {
+    // выход из учетной записи
+    $logoutBtn.addEventListener('click', async function(e) {
         e.preventDefault();
 
         logout();
+    })
+
+    // открытие и закрытие меню
+    $menuBtn.addEventListener('click', function() {
+        $menu.classList.toggle('active');
+        $menuBtn.classList.toggle('active');
     })
 })();

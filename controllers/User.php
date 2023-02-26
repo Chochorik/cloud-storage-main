@@ -8,7 +8,9 @@ use PHPMailer\PHPMailer\Exception;
 class User {
     private string $userName, $email, $pass, $passConfirm, $role;
     private string $salt;
-    private $connection;
+    private object $connection;
+
+    const PATH_TO_STORAGE = './storage/';
 
     public function __construct()
     {
@@ -142,6 +144,8 @@ class User {
                     "status" => true,
                     "message" => 'Вы были успешно зарегистрированы',
                 ];
+
+                mkdir(self::PATH_TO_STORAGE . $this->userName);
 
                 echo json_encode($response);
             }

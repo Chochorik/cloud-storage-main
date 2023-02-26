@@ -3,7 +3,7 @@
 namespace controllers;
 
 class Admin {
-    private $connection;
+    private object $connection;
 
     public function __construct()
     {

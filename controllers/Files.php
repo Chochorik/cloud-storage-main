@@ -4,7 +4,7 @@ namespace controllers;
 
 class Files
 {
-    private $connection;
+    protected object $connection;
 
     const PATH_TO_STORAGE = './storage/'; // путь до папки, где хранятся все папки и файлы пользователей
 

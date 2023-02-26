@@ -48,8 +48,23 @@ if (!$_SESSION['authorized']) {
     </header>
     <main class="main">
         <section class="main__section">
-            <div class="container">
-
+            <div class="container main__container">
+                    
+            </div>
+            <div class="main__menu">
+                <ul class="main__list">
+                    <li class="main__item">
+                        <button class="main__btn-action" id="upload-file">
+                            Загрузить файл
+                        </button>
+                    </li>
+                    <li class="main__item">
+                        <button class="main__btn-action" id="create-dir">
+                            Создать папку
+                        </button>
+                    </li>
+                </ul>
+                <button class="main__menu-btn"></button>
             </div>
         </section>
     </main>

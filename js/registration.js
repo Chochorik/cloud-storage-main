@@ -8,6 +8,8 @@
               passwordConfirm = document.querySelector('.input__password_conf').value,
               message = document.querySelector('.text-of-result');
         
+        let $inputs = document.querySelectorAll('.registration__input');
+        
         message.textContent = '';
 
         const user = {
@@ -28,6 +30,10 @@
         if (data.status === true) {
             message.style = 'color: var(--usual-color)';
             message.textContent = data.message; 
+            
+            for (const input of $inputs) {
+                input.value = '';
+            }
         } else {
             message.style = 'color: #FF4040';
             message.textContent = data.message;

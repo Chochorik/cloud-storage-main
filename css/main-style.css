@@ -42,7 +42,6 @@
     color: var(--white-color);
 }
 
-/* main */
 .overlay {
     /* Скрываем подложку  */
     opacity: 0;
@@ -197,4 +196,62 @@
 
 .modal__message {
     color: #FF4040;
+}
+
+/* main */
+.main__container {
+    position: relative;
+}
+
+.main__menu {
+    position: fixed;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    right: 100px;
+    bottom: 25px;
+}
+
+.main__menu-btn {
+    width: 60px;
+    height: 60px;
+    background-image: url('/media/plus.svg');
+    background-position: center center;
+    background-repeat: no-repeat;
+    transition: background-image .3s ease;
+}
+
+.main__menu-btn.active {
+    background-image: url('/media/minus.svg');
+}
+
+.main__list {
+    padding-left: 10px;
+    padding-right: 10px;
+    border: 2px solid var(--bright-color);
+    border-radius: 3px;
+    transform-origin: bottom;
+    transform: scaleY(0);
+    transition: transform .3s ease;
+}
+
+.main__item {
+    padding: 10px;
+}
+
+.main__item:not(:last-child) {
+    border-bottom: 1px solid var(--bright-color) ;
+}
+
+.main__item:not(:first-child) {
+    border-top: 1px solid var(--bright-color);
+}
+
+.main__btn-action {
+    font-weight: 600;
+    color: var(--dark-color);
+}
+
+.main__list.active {
+    transform: scaleY(1);
 }
