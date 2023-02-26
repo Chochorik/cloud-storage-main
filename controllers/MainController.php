@@ -28,6 +28,11 @@ class MainController {
         require_once './pages/admin-panel.php';
     }
 
+    public function newPass()
+    {
+        require_once './pages/new-password.html';
+    }
+
     public function notFound()
     {
         require_once './pages/error.html';

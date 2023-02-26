@@ -3,12 +3,12 @@
 namespace controllers;
 
 use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\SMTP;
 use PHPMailer\PHPMailer\Exception;
 
 class User {
-    protected string $userName, $email, $pass, $passConfirm, $role;
-    protected $connection;
+    private string $userName, $email, $pass, $passConfirm, $role;
+    private string $salt;
+    private $connection;
 
     public function __construct()
     {
@@ -22,6 +22,7 @@ class User {
         $this->role = 'user';
     }
 
+    // регистрация пользователя
     public function registration()
     {
         $user = json_decode(file_get_contents('php://input'), true);
@@ -33,7 +34,9 @@ class User {
         if ($this->userName !== '') {
             $pattern = '/^[a-z0-9-_]+$/i';
 
+            // проверка на корректность вводимых данных
             if (preg_match($pattern, $this->userName)) {
+                // проверка на максимальную допустимую длину
                 if (strlen($this->userName) > 30) {
                     $response = [
                         "message" => 'Логин слишком длинный! (не более 30 символов)'
@@ -86,6 +89,26 @@ class User {
             }
         }
 
+        if ($this->pass !== '') {
+            if (strlen($this->pass) > 30) {
+                $response = [
+                    "message" => 'Длина пароля слишком длинная! (не более 30 символов)'
+                ];
+
+                echo json_encode($response);
+                die();
+            }
+
+            if (strlen($this->pass) < 8) {
+                $response = [
+                    "message" => 'Длина пароля слишком маленькая! (не менее 8 символов)'
+                ];
+
+                echo json_encode($response);
+                die();
+            }
+        }
+
         if ($this->userName !== ''
             && ($this->email !== '' && filter_var($this->email, FILTER_VALIDATE_EMAIL))
             && $this->pass !== ''
@@ -102,15 +125,17 @@ class User {
                 exit;
             }
 
-            $statement = $this->connection->prepare("INSERT INTO `users_list`(`id`, `login`, `email`, `pass_hash`, `role`) VALUES (:id, :login, :email, :hash, :role)");
+            $statement = $this->connection->prepare("INSERT INTO `users_list`(`id`, `login`, `email`, `pass_hash`, `salt`, `role`) VALUES (:id, :login, :email, :hash, :salt, :role)");
 
             $pass = password_hash($this->pass, PASSWORD_BCRYPT);
+            $this->salt = md5($this->userName . $this->pass);
 
             $statement->bindValue('id', null);
             $statement->bindValue('login', $this->userName);
             $statement->bindValue('email', $this->email);
-            $statement->bindValue('role', $this->role);
             $statement->bindValue('hash', $pass);
+            $statement->bindValue('salt', $this->salt);
+            $statement->bindValue('role', $this->role);
 
             if ($statement->execute()) {
                 $response = [
@@ -150,6 +175,7 @@ class User {
         }
     }
 
+    // авторизация пользователя
     public function authorization()
     {
         $user = json_decode(file_get_contents('php://input'), true);
@@ -169,36 +195,9 @@ class User {
                 $result = $statement->fetchAll(\PDO::FETCH_ASSOC);
 
                 if (count($result) === 1) {
-                    $hashed_password = $result[0]['pass_hash'];
-                    if (password_verify($this->pass, $hashed_password)) {
-                        session_start();
-                        $token = $this->connection->prepare("UPDATE `users_list` SET `session` = :session WHERE `login` = :login");
+                    $hashedPassword = $result[0]['pass_hash'];
 
-                        $token->bindValue('login', $this->userName);
-                        $token->bindValue('session', session_id());
-
-                        if ($token->execute()) {
-                            if ($result[0]['login'] === 'Admin') {
-                                $_SESSION['admin'] = true;
-                            } else {
-                                $_SESSION['admin'] = false;
-                            }
-
-                            $_SESSION['authorized'] = true;
-                            $_SESSION['user'] = $this->userName;
-
-                            http_response_code(200);
-
-                            $response = [
-                                "status" => true,
-                                "message" => 'Вы успешно вошли',
-                                "user" => $this->userName,
-                                "token" => session_id()
-                            ];
-
-                            echo json_encode($response);
-                        }
-                    } else {
+                    if (!password_verify($this->pass, $hashedPassword)) {
                         $response = [
                             "status" => false,
                             "message" => 'Пароль введён неверно!'
@@ -206,6 +205,34 @@ class User {
 
                         echo json_encode($response);
                         die();
+                    }
+
+                    session_start();
+                    $token = $this->connection->prepare("UPDATE `users_list` SET `session` = :session WHERE `login` = :login");
+
+                    $token->bindValue('login', $this->userName);
+                    $token->bindValue('session', session_id());
+
+                    if ($token->execute()) {
+                        if ($result[0]['login'] === 'Admin') {
+                            $_SESSION['admin'] = true;
+                        } else {
+                            $_SESSION['admin'] = false;
+                        }
+
+                        $_SESSION['authorized'] = true;
+                        $_SESSION['user'] = $this->userName;
+
+                        http_response_code(200);
+
+                        $response = [
+                            "status" => true,
+                            "message" => 'Вы успешно вошли',
+                            "user" => $this->userName,
+                            "token" => session_id()
+                        ];
+
+                        echo json_encode($response);
                     }
                 } else {
                     $response = [
@@ -235,6 +262,7 @@ class User {
         }
     }
 
+    // выход пользователя из учетной записи
     public function logout()
     {
         session_start();
@@ -256,7 +284,7 @@ class User {
 
                 if ($deleteToken->execute() && session_status() == PHP_SESSION_ACTIVE) {
                     unset($_SESSION);
-                    $result = session_destroy();
+                    session_destroy();
 
                     $response = [
                         "status" => true,
@@ -277,8 +305,10 @@ class User {
         }
     }
 
-    public function resetPassword()
+    // восстановление забытого пароля
+    public function sendLinkResetPass()
     {
+        // получение данных из input для email
         $post = json_decode(file_get_contents('php://input'), true);
 
         $login = $post['login'];
@@ -293,31 +323,166 @@ class User {
             exit;
         }
 
+        // проверка на существование пользователя с данным логином
         $statement = $this->connection->prepare("SELECT * FROM `users_list` WHERE `login` = :login");
+        $statement->bindParam('login', $login);
 
-        $statement->bindValue('login', $login);
+        $statement->execute();
 
-        if ($statement->execute()) {
-            $result = $statement->fetchAll(\PDO::FETCH_ASSOC);
+        $result = $statement->fetchAll(\PDO::FETCH_ASSOC);
 
-            if (count($result) > 0) {
-                $email = $result[0]['email'];
+        if (count($result) > 0) {
+            // восстановление пароля
+            $mail = new PHPMailer(true);
+
+            $email = $result[0]['email'];
+            $salt = $result[0]['salt'];
+
+            // ссылка на восстановление пароля
+            $recoveryLink = "http://www.cloud-storage.local/recovery/user/$salt";
+
+            // формирование письма
+            $title = 'Cloud Storage';
+
+            $body = <<<MAIL
+                <h2>Восстановление пароля</h2><br>
+                <p>
+                    Чтобы восстановить пароль, перейдите по <a href="$recoveryLink">ссылке</a>
+                </p><br>
+                <p>
+                   Если это не вы пытаетесь восстановить пароль, то не переходите по ссылке.
+                </p><br>
+            MAIL;
+
+            try {
+                //Server settings
+                $mail->isSMTP();                                            //Send using SMTP
+                $mail->CharSet    = "UTF-8";
+                $mail->Host       = 'ssl://smtp.gmail.com';                     //Set the SMTP server to send through
+                $mail->SMTPAuth   = true;                                   //Enable SMTP authentication
+                $mail->Username   = '1nikita.medvedev2022@gmail.com';                     //SMTP username
+                $mail->Password   = 'gpxfqjoyuimdskek';                               //SMTP password
+                $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;            //Enable implicit TLS encryption
+                $mail->Port       = 465;                                    //TCP port to connect to; use 587 if you have set `SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS`
+
+                //Recipients
+                $mail->setFrom('1nikita.medvedev2022@gmail.com', 'Cloud Storage');
+                $mail->addAddress($email, $result[0]['login']);     //Add a recipient
+
+                //Content
+                $mail->Subject = $title;
+                $mail->msgHTML($body);
+
+                $mail->send();
 
                 $response = [
                     "status" => true,
-                    "message" => $email
+                    "message" => 'Письмо с ссылкой для восстановления пароля было отправлено на почту'
+                ];
+
+                echo json_encode($response);
+            } catch (Exception $exception) {
+                echo json_encode($exception->getMessage());
+                die();
+            }
+        } else {
+            $response = [
+                "status" => false,
+                "message" => 'Пользователя с таким логином не найдено!'
+            ];
+
+            echo json_encode($response);
+            exit;
+        }
+    }
+
+    // метод для задачи нового пароля пользователя
+    public function resetPassword(array $params)
+    {
+        // "соль" пользователя, выступает идентификатором для восстановления пароля
+        $salt = $params[0];
+
+        // получение данных из input для email
+        $post = json_decode(file_get_contents('php://input'), true);
+
+        $this->pass = $post['new-password'];
+        $this->passConfirm = $post['repeat-new-password'];
+
+        if ($this->pass === '' || $this->passConfirm === '') {
+            $response = [
+                "status" => false,
+                "message" => 'Заполните все поля!'
+            ];
+
+            echo json_encode($response);
+            die();
+        }
+
+        if ($this->pass !== $this->passConfirm) {
+            $response = [
+                "status" => false,
+                "message" => 'Пароли не совпадают!'
+            ];
+
+            echo json_encode($response);
+            die();
+        }
+
+        $user = $this->connection->prepare("SELECT * FROM `users_list` WHERE `salt` = :salt");
+        $user->bindValue('salt', $salt);
+
+        if ($user->execute()) {
+            $result = $user->fetchAll(\PDO::FETCH_ASSOC);
+
+            if (count($result) == 0) {
+                $response = [
+                    "status" => false,
+                    "message" => 'Пользователя не существует'
+                ];
+
+                echo json_encode($response);
+                die();
+            }
+
+            $id = $result[0]['id'];
+            $this->salt = $result[0]['salt'];
+            $this->userName = $result[0]['login'];
+
+            $newPass = password_hash($this->pass, PASSWORD_BCRYPT);
+
+            $statement = $this->connection->prepare("UPDATE `users_list` SET `pass_hash` = :newPass, `salt` = :newSalt WHERE `id` = :id");
+            $statement->bindValue('newPass', $newPass);
+            $statement->bindValue('newSalt', md5($this->userName . $this->pass));
+            $statement->bindValue('id', $id);
+
+            if ($statement->execute()) {
+                $response = [
+                    "status" => true,
+                    "message" => 'Пароль был успешно изменен!'
                 ];
 
                 echo json_encode($response);
             } else {
+                http_response_code(500);
+
                 $response = [
                     "status" => false,
-                    "message" => 'Пользователя с таким логином не найдено!'
+                    "message" => 'Что-то пошло не так...'
                 ];
 
                 echo json_encode($response);
-                exit;
+                die();
             }
+        } else {
+            http_response_code(500);
+
+            $response = [
+                "status" => false,
+                "message" => 'Что-то пошло не так...'
+            ];
+
+            echo json_encode($response);
+            die();
         }
     }
 }

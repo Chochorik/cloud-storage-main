@@ -18,12 +18,12 @@ if (!$_SESSION['admin']) {
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script defer src="../js/admin.js"></script>
-    <link rel="stylesheet" href="../css/normalize.css">
-    <link rel="stylesheet" href="../css/basic.css">
-    <link rel="stylesheet" href="../css/fonts.css">
-    <link rel="stylesheet" href="../css/main-style.css">
-    <link rel="icon" href="../media/cloud.svg" type="image/svg+xml">
+    <script defer src="/js/admin.js"></script>
+    <link rel="stylesheet" href="/css/normalize.css">
+    <link rel="stylesheet" href="/css/basic.css">
+    <link rel="stylesheet" href="/css/fonts.css">
+    <link rel="stylesheet" href="/css/main-style.css">
+    <link rel="icon" href="/media/cloud.svg" type="image/svg+xml">
     <title>Cloud Storage (admin)</title>
 </head>
 

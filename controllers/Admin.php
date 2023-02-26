@@ -15,140 +15,159 @@ class Admin {
 
     }
 
+    // проверка пользователя на права администратора
+    private function checkAdmin($sessionId) : bool
+    {
+        $statement = $this->connection->prepare("SELECT * FROM `users_list` WHERE `session` = :token");
+        $statement->bindValue('token', $sessionId);
+
+        if ($statement->execute()) {
+            $result = $statement->fetchAll(\PDO::FETCH_ASSOC);
+
+            if (count($result) > 0) {
+                if ($result[0]['role'] !== 'admin') {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+    }
+
+    // проверка на авторизованность
+    private function checkAuth(array $array) : bool
+    {
+        if (isset($array['admin']) && isset($array['authorized'])) {
+            if (!$array['admin'] || !$array['authorized']) {
+                return false;
+            }
+        } else {
+            return false;
+        }
+
+        return true;
+    }
+
+    // получение списка всех пользователей
     public function getUsersList()
     {
         session_start();
 
-        $statement = $this->connection->prepare("SELECT * FROM `users_list` WHERE `session` = :token");
+        if (!$this->checkAdmin(session_id())) {
+            $response = [
+                "status" => false,
+                "message" => 'Вы не являетесь администратором!'
+            ];
 
-        $statement->bindValue('token', session_id());
+            echo json_encode($response);
+            die(http_response_code(403));
+        }
 
-        if ($statement->execute()) {
-            $result = $statement->fetchAll(\PDO::FETCH_ASSOC);
+        if (!$this->checkAuth($_SESSION)) {
+            $response = [
+                "status" => false,
+                "message" => 'Необходимо авторизоваться!'
+            ];
 
-            if (count($result) > 0) {
-                if ($result[0]['role'] === 'admin') {
-                    if (isset($_SESSION['admin']) && isset($_SESSION['authorized'])) {
-                        if ($_SESSION['admin'] === true && $_SESSION['authorized'] === true) {
-                            $users = $this->connection->prepare("SELECT `id`, `login`, `email`, `role` FROM `users_list`");
+            echo json_encode($response);
+            die(http_response_code(403));
+        }
 
-                            if ($users->execute()) {
-                                $usersList = $users->fetchAll(\PDO::FETCH_ASSOC);
+        $users = $this->connection->prepare("SELECT `id`, `login`, `email`, `role` FROM `users_list`");
 
-                                $response = [
-                                    "status" => true,
-                                    "array" => $usersList
-                                ];
+        if ($users->execute()) {
+            $usersList = $users->fetchAll(\PDO::FETCH_ASSOC);
 
-                                echo json_encode($response);
-                            }
-                        } else {
-                            http_response_code(403);
+            $response = [
+                "status" => true,
+                "array" => $usersList
+            ];
 
-                            $response = [
-                                "status" => false,
-                                "message" => 'Вы не являетесь администратором!'
-                            ];
-
-                            echo json_encode($response);
-                            exit;
-                        }
-                    } else {
-                        $response = [
-                            "status" => false,
-                            "message" => 'Что-то пошло не так...'
-                        ];
-
-                        echo json_encode($response);
-                        exit;
-                    }
-                }
-            }
+            echo json_encode($response);
         }
     }
 
+    // получение данных конкретного пользователя
     public function getUser(array $params)
     {
         session_start();
 
-        $statement = $this->connection->prepare("SELECT * FROM `users_list` WHERE `session` = :token");
+        if (!$this->checkAdmin(session_id())) {
+            $response = [
+                "status" => false,
+                "message" => 'Вы не являетесь администратором!'
+            ];
 
-        $statement->bindValue('token', session_id());
+            echo json_encode($response);
+            die(http_response_code(403));
+        }
 
-        if ($statement->execute()) {
-            $result = $statement->fetchAll(\PDO::FETCH_ASSOC);
+        if (!$this->checkAuth($_SESSION)) {
+            $response = [
+                "status" => false,
+                "message" => 'Необходимо авторизоваться!'
+            ];
 
-            if (count($result) > 0) {
-                if ($result[0]['role'] === 'admin') {
-                    if (isset($_SESSION['admin']) && isset($_SESSION['authorized'])) {
-                        if ($_SESSION['admin'] === true && $_SESSION['authorized'] === true) {
-                            $id = $params[0];
+            echo json_encode($response);
+            die(http_response_code(403));
+        }
 
-                            $userPrepare = $this->connection->prepare("SELECT `id`, `login`, `email`, `role` FROM `users_list` WHERE `id` = :id");
-                            $userPrepare->bindParam('id', $id);
+        $id = $params[0];
 
-                            if ($userPrepare->execute()) {
-                                $user = $userPrepare->fetch(\PDO::FETCH_ASSOC);
+        $userPrepare = $this->connection->prepare("SELECT `id`, `login`, `email`, `role` FROM `users_list` WHERE `id` = :id");
+        $userPrepare->bindParam('id', $id);
 
-                                if ($user) {
-                                    $response = [
-                                        "status" => true,
-                                        "user" => $user
-                                    ];
+        if ($userPrepare->execute()) {
+            $user = $userPrepare->fetch(\PDO::FETCH_ASSOC);
 
-                                    echo json_encode($response);
-                                } else {
-                                    $response = [
-                                        "status" => false,
-                                        "message" => 'Пользователя с таким id не найдено'
-                                    ];
+            if ($user) {
+                $response = [
+                    "status" => true,
+                    "user" => $user
+                ];
 
-                                    echo json_encode($response);
-                                    exit;
-                                }
-                            }
-                        } else {
-                            http_response_code(403);
+                echo json_encode($response);
+            } else {
+                $response = [
+                    "status" => false,
+                    "message" => 'Пользователя с таким id не найдено'
+                ];
 
-                            $response = [
-                                "status" => false,
-                                "message" => 'Вы не являетесь администратором!'
-                            ];
-
-                            echo json_encode($response);
-                            exit;
-                        }
-                    } else {
-                        $response = [
-                            "status" => false,
-                            "message" => 'Что-то пошло не так...'
-                        ];
-
-                        echo json_encode($response);
-                        exit;
-                    }
-                }
+                echo json_encode($response);
+                exit;
             }
+        } else {
+            $response = [
+                "status" => false,
+                "message" => 'Что-то пошло не так...'
+            ];
+
+            echo json_encode($response);
+            die();
         }
     }
 
+    // обновление данных пользователя
     public function updateUser(array $params)
     {
         session_start();
 
         $data = json_decode(file_get_contents('php://input'), true);
 
+        // присваиваем новые значения
         $newId = $data['id'];
         $newLogin = $data['login'];
         $newEmail = $data['email'];
         $newRole = $data['role'];
 
+        // старые данные пользователя для дальнейшего сравнения
         $oldData = $data['oldData'];
         $oldId = $oldData['id'];
         $oldLogin = $oldData['login'];
         $oldEmail = $oldData['email'];
         $oldRole = $oldData['role'];
 
+        // проверка на пустоту полей
         if ($newId === ''
             || $newLogin === ''
             || $newEmail === ''
@@ -162,6 +181,7 @@ class Admin {
             die();
         }
 
+        // проверка логина
         if ($newLogin !== '' && $newLogin !== $oldLogin) {
             $pattern = '/^[a-z0-9-_]+$/i';
 
@@ -175,7 +195,7 @@ class Admin {
                     exit;
                 }
 
-
+                // проверка логина на оригинальность
                 $statement = $this->connection->prepare("SELECT * FROM `users_list` WHERE `login` = :login");
                 $statement->bindValue('login', $newLogin);
 
@@ -203,6 +223,7 @@ class Admin {
             }
         }
 
+        // проверка email
         if ($newEmail !== '' && $newEmail !== $oldEmail) {
             $statement = $this->connection->prepare("SELECT * FROM `users_list` WHERE `email` = :email");
             $statement->bindValue('email', $newEmail);
@@ -211,6 +232,7 @@ class Admin {
 
             $result = $statement->fetchAll(\PDO::FETCH_ASSOC);
 
+            // проверка email на оригинальность
             if (count($result) > 0) {
                 $response = [
                     "status" => false,
@@ -222,9 +244,11 @@ class Admin {
             }
         }
 
+        // проверка id
         if ($newId !== '' && $newId !== $oldId) {
             $pattern = '#^[0-9]+$#';
 
+            // проверка id на наличие других символов кроме цифр
             if (preg_match($pattern, $newId)) {
                 if (strlen($newId) > 10) {
                     $response = [
@@ -236,6 +260,7 @@ class Admin {
                     die();
                 }
 
+                // проверка id на оригинальность
                 $statement = $this->connection->prepare("SELECT * FROM `users_list` WHERE `id` = :id");
                 $statement->bindValue('id', $newId);
 
@@ -263,7 +288,8 @@ class Admin {
             }
         }
 
-        if ($newRole !== '' && $newRole !== $oldRole) {
+        // проверка роли на корректность
+        if ($newRole !== '' && ($newRole !== $oldRole)) {
             if ($newRole !== 'admin' || $newRole !== 'user') {
                 $response = [
                     "status" => false,
@@ -275,91 +301,98 @@ class Admin {
             }
         }
 
-        $statement = $this->connection->prepare("SELECT * FROM `users_list` WHERE `session` = :token");
+        if (!$this->checkAdmin(session_id())) {
+            $response = [
+                "status" => false,
+                "message" => 'Вы не являетесь администратором!'
+            ];
 
-        $statement->bindValue('token', session_id());
+            echo json_encode($response);
+            die(http_response_code(403));
+        }
 
-        if ($statement->execute()) {
-            $result = $statement->fetchAll(\PDO::FETCH_ASSOC);
+        if (!$this->checkAuth($_SESSION)) {
+            $response = [
+                "status" => false,
+                "message" => 'Необходимо авторизоваться!'
+            ];
 
-            if (count($result) > 0) {
-                if ($result[0]['role'] === 'admin') {
-                    if (isset($_SESSION['admin']) && isset($_SESSION['authorized'])) {
-                        if ($_SESSION['admin'] === true && $_SESSION['authorized'] === true) {
-                            $id = $params[0];
+            echo json_encode($response);
+            die(http_response_code(403));
+        }
 
-                            $userPrepare = $this->connection->prepare("UPDATE `users_list` SET `id` = :newId, `login`= :newLogin, `email` = :newEmail, `role` = :newRole WHERE `id` = :userId");
-                            $userPrepare->bindValue('newId', $newId);
-                            $userPrepare->bindValue('newLogin', $newLogin);
-                            $userPrepare->bindValue('newEmail', $newEmail);
-                            $userPrepare->bindValue('newRole', $newRole);
-                            $userPrepare->bindValue('userId', $id);
+        $id = $params[0];
 
-                            if ($userPrepare->execute()) {
-                                $response = [
-                                    "status" => true,
-                                    "message" => 'Данные пользователя успешно изменены'
-                                ];
+        $userPrepare = $this->connection->prepare("UPDATE `users_list` SET `id` = :newId, `login`= :newLogin, `email` = :newEmail, `role` = :newRole WHERE `id` = :userId");
+        $userPrepare->bindValue('newId', $newId);
+        $userPrepare->bindValue('newLogin', $newLogin);
+        $userPrepare->bindValue('newEmail', $newEmail);
+        $userPrepare->bindValue('newRole', $newRole);
+        $userPrepare->bindValue('userId', $id);
 
-                                echo json_encode($response);
-                            }
-                        }
-                    }
-                }
-            }
+        if ($userPrepare->execute()) {
+            $response = [
+                "status" => true,
+                "message" => 'Данные пользователя успешно изменены'
+            ];
+
+            echo json_encode($response);
+        } else {
+            $response = [
+                "status" => false,
+                "message" => 'Что-то пошло не так...'
+            ];
+
+            echo json_encode($response);
+            die();
         }
     }
 
+    // удаление конкретного пользователя
     public function deleteUser(array $params)
     {
         session_start();
 
-        $statement = $this->connection->prepare("SELECT * FROM `users_list` WHERE `session` = :token");
+        if (!$this->checkAdmin(session_id())) {
+            $response = [
+                "status" => false,
+                "message" => 'Вы не являетесь администратором!'
+            ];
 
-        $statement->bindValue('token', session_id());
+            echo json_encode($response);
+            die(http_response_code(403));
+        }
 
-        if ($statement->execute()) {
-            $result = $statement->fetchAll(\PDO::FETCH_ASSOC);
+        if (!$this->checkAuth($_SESSION)) {
+            $response = [
+                "status" => false,
+                "message" => 'Необходимо авторизоваться!'
+            ];
 
-            if (count($result) > 0) {
-                if ($result[0]['role'] === 'admin') {
-                    if (isset($_SESSION['admin']) && isset($_SESSION['authorized'])) {
-                        if ($_SESSION['admin'] === true && $_SESSION['authorized'] === true) {
-                            $id = $params[0];
+            echo json_encode($response);
+            die(http_response_code(403));
+        }
 
-                            $users = $this->connection->prepare("DELETE FROM `users_list` WHERE `id` = :id");
-                            $users->bindValue('id', $id);
+        $id = $params[0];
 
-                            if ($users->execute()) {
-                                $response = [
-                                    "status" => true,
-                                    "Пользователь был удалён"
-                                ];
+        $users = $this->connection->prepare("DELETE FROM `users_list` WHERE `id` = :id");
+        $users->bindValue('id', $id);
 
-                                echo json_encode($response);
-                                } else {
-                                $response = [
-                                    "status" => false,
-                                    "message" => 'Пользователя с таким id не найдено'
-                                ];
+        if ($users->execute()) {
+            $response = [
+                "status" => true,
+                "Пользователь был удалён"
+            ];
 
-                                echo json_encode($response);
-                                exit;
-                            }
-                        }
-                    }
-                } else {
-                    http_response_code(403);
+            echo json_encode($response);
+            } else {
+            $response = [
+                "status" => false,
+                "message" => 'Пользователя с таким id не найдено'
+            ];
 
-                    $response = [
-                        "status" => false,
-                        "message" => 'Вы не являетесь администратором!'
-                    ];
-
-                    echo json_encode($response);
-                    exit;
-                }
-            }
+            echo json_encode($response);
+            exit;
         }
     }
 }

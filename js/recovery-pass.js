@@ -1,9 +1,9 @@
 (() => {
-    const recoveryForm = document.getElementById('recovery__form'),
-          messageArea = document.querySelector('.text-of-result');
+    const recoveryForm = document.getElementById('recovery__form');
 
     async function recoverPassword() {
-        const login = document.querySelector('.recovery__input').value;
+        const login = document.querySelector('.recovery__input-login').value,
+              messageArea = document.querySelector('.text-of-result');
 
         const formData = {
             'login': login
@@ -29,6 +29,6 @@
     recoveryForm.addEventListener('submit', async function(e) {
         e.preventDefault();
 
-        recoverPassword();
+        await recoverPassword();
     })
 })();
