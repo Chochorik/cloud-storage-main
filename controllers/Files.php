@@ -18,6 +18,20 @@ class Files
         }
     }
 
+    // проверка на авторизованность
+    protected function checkAuth(array $array) : bool
+    {
+        if (isset($array['authorized'])) {
+            if (!$array['authorized']) {
+                return false;
+            }
+        } else {
+            return false;
+        }
+
+        return true;
+    }
+
     // получение списка файлов
     public function getFiles()
     {

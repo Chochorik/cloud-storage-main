@@ -43,7 +43,8 @@ class Route {
 
         $replace = preg_replace("/&.*/", '', end($exp));
         $params[] = [
-            $replace
+            $replace,
+            $_GET
         ];
 
         return call_user_func_array($this->callback, $params);
@@ -53,6 +54,12 @@ class Route {
     {
         $newPath = str_replace('/', '\/', $this->getPath());
         $expression = str_replace(['*', '/'], ['\w+', '/'], $newPath);
+
+        echo $expression . '<br>';
+
+        preg_match_all("/(?<={).+?(?=})/", $expression, $params);
+
+        print_r($params) . '<br>';
 
         return (preg_match('/^' . $expression . '$/', $uri) && strtolower($this->getMethod()) === $method);
     }
