@@ -10,8 +10,6 @@ class User {
     private string $salt;
     private object $connection;
 
-    const PATH_TO_STORAGE = './storage/';
-
     public function __construct()
     {
         try {
@@ -140,14 +138,28 @@ class User {
             $statement->bindValue('role', $this->role);
 
             if ($statement->execute()) {
-                $response = [
-                    "status" => true,
-                    "message" => 'Вы были успешно зарегистрированы',
-                ];
+                $getUserId = $this->connection->prepare("SELECT `id` FROM `users_list` WHERE `salt` = :salt");
+                $getUserId->bindValue('salt', $this->salt);
 
-                mkdir(self::PATH_TO_STORAGE . $this->userName);
+                // получение id только что созданного пользователя
+                $getUserId->execute();
+                $user = $getUserId->fetchAll(\PDO::FETCH_ASSOC);
+                $userId = $user[0]['id'];
 
-                echo json_encode($response);
+                // создание корневой папки пользователя
+                $createRootDir = $this->connection->prepare("INSERT INTO `directories`(`path`, `name`, `user_id`) VALUES (:path, :dirName, :userId)");
+                $createRootDir->bindValue('path', '/');
+                $createRootDir->bindValue('dirName', 'root');
+                $createRootDir->bindParam('userId', $userId);
+
+                if ($createRootDir->execute()) {
+                    $response = [
+                        "status" => true,
+                        "message" => 'Вы были успешно зарегистрированы',
+                    ];
+
+                    echo json_encode($response);
+                }
             }
         } else if ($this->userName === ''
                    || $this->email === ''

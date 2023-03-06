@@ -48,15 +48,13 @@ $router->put('admin/users/*', [Admin::class, 'updateUser']); // обновлен
 $router->delete('admin/users/*', [Admin::class, 'deleteUser']); // удаление пользователя
 
 // endpoint'ы для файлов
-$router->get('files', [Files::class, 'getFiles']); // получение списка файлов
 $router->get('files/*', [Files::class, 'getFileInfo']); // получение информации о конкретном файле
 $router->post('files', [Files::class, 'createFile']); // создание файла
 $router->put('files/*', [Files::class, 'updateFile']); // обновление информации о файле
 $router->delete('files/*', [Files::class, 'deleteFile']); // удаление файла
 
 // endpoint'ы для директорий
-$router->get('directory/root', [Directories::class, 'rootDirInfo']); // получение информации корневой папки
-$router->get('directory', [Directories::class, 'getDirInfo']); // получение информации о конкретной папке
+$router->get('directory/*', [Directories::class, 'getDirInfo']); // получение информации о конкретной папке
 $router->post('directory', [Directories::class, 'createDir']); // создание папки
 $router->put('directory/*', [Directories::class, 'updateDir']); // обновление информации о папке
 $router->delete('directory/*', [Directories::class, 'deleteDir']); // удаление папки

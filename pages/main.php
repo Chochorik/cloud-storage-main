@@ -13,7 +13,7 @@ if (!$_SESSION['authorized']) {
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script defer src="/js/main.js"></script>
+    <script defer type="module" src="/js/main.js"></script>
     <link rel="stylesheet" href="/css/normalize.css">
     <link rel="stylesheet" href="/css/basic.css">
     <link rel="stylesheet" href="/css/fonts.css">
@@ -49,8 +49,10 @@ if (!$_SESSION['authorized']) {
     <main class="main">
         <section class="main__section">
             <div class="container main__container">
-                <div class="main__display-folders">
-                    <!-- <span class="main__path"></span> -->
+                <div class="main__btn-back">
+                    <button class="main__btn-last-path" id="btn-back"></button>
+                    <div class="main__display-folders"></div>
+                    <ul class="main__btn-list"></ul>
                 </div>
             </div>
             <div class="main__menu">
@@ -81,10 +83,17 @@ if (!$_SESSION['authorized']) {
             </h2>
             <form class="modal-upload-file__form" id="upload-file-form" enctype="multipart/form-data">
                 <p class="modal-upload-file__message"></p>
-                <label class="modal-upload-file__label">
-                    Выберите файл
-                    <input type="file">
-                </label>
+                <div class="modal-upload-file__wrapper">
+                    <input type="file" class="modal-upload-file__file" name="file" id="modal-upload-file__file">
+                    <label class="modal-upload-file__label" for="modal-upload-file__file">
+                        <span class="modal-upload-file__icon-wrapper">
+                            <img class="modal-upload-file__icon" src="/media/arrow_down.svg" alt="Загрузить файл">
+                        </span>
+                        <span class="modal-upload-file__select-btn">
+                            Выберите файл
+                        </span>
+                    </label>
+                </div>
                 <button type="submit" class="modal-upload-file__btn">
                     Загрузить
                 </button>

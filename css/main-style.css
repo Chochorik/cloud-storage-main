@@ -228,6 +228,7 @@
 .main__list {
     padding-left: 10px;
     padding-right: 10px;
+    background-color: var(--white-color);
     border: 2px solid var(--bright-color);
     border-radius: 3px;
     transform-origin: bottom;
@@ -261,18 +262,23 @@
     min-height: 300px;
 }
 
-.modal-create-dir {
+.modal-upload-file {
+    min-height: 300px;
+}
+
+.modal-create-dir,
+.modal-upload-file {
     padding-top: 30px;
     padding-bottom: 30px;
 }
 
-.modal-create-dir__title {
+.modal-create-dir__title,
+.modal-upload-file__title {
     color: var(--darkest-color);
 }
 
 .modal-create-dir__form,
-.modal-create-dir__label,
-.modal-upload-file {
+.modal-upload-file__form {
     display: flex;
     flex-direction: column;
 }
@@ -305,4 +311,125 @@
     background-color: var(--usual-color);
     border: 2px solid var(--darkest-color);
     border-radius: 5px;
+}
+
+.modal-upload-file__wrapper {
+    position: relative;
+    margin-bottom: 40px;
+}
+
+.modal-upload-file__label {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    cursor: pointer;
+}
+
+.modal-upload-file__icon {
+    width: 50px;
+    height: 50px;
+}
+
+.modal-upload-file__file {
+    opacity: 0;
+    visibility: hidden;
+    position: absolute;
+}
+
+.modal-upload-file__select-btn {
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.main__btn-back {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.main__btn-last-path {
+    width: 40px;
+    height: 40px;
+    background-image: url('/media/arrow-back.svg');
+    background-position: center center;
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+
+.main__btn-last-path.disabled {
+    opacity: 0.5;
+}
+
+/* main list */
+.main__btn-list {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: stretch;
+    width: 100%;
+    padding-top: 30px;
+    padding-bottom: 30px;
+}
+
+.list__item {
+    width: calc(100% / 8 - 40px);
+    min-height: 70px;
+    max-height: fit-content;
+}
+
+.list__item:not(:nth-child(8n)) {
+    margin-right: 30px;
+}
+
+.dir__btn {
+    width: 100%;
+    height: 100px;
+    background-image: url('/media/folder.svg');
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-size: contain;
+}
+
+.file__btn {
+    display: inline-block;
+    width: 100%;
+    height: 100px;
+    background-image: url('/media/file.svg');
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-size: contain;
+}
+
+.file__btn-name {
+    word-wrap: break-word;
+}
+
+.file__link {
+    display: inline-block;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+}
+
+.file__container,
+.dir__container {
+    position: relative;
+    text-align: center;
+}
+
+/* changing files/dirs */
+.btns__div {
+    display: flex;
+    flex-direction: row;
+    align-items: end;
+}
+
+.btn__change {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    background-image: url('/media/dots.svg');
+    background-position: center center;
+    background-size: contain;
+    background-repeat: no-repeat;
 }
