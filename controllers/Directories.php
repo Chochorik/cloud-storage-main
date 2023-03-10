@@ -36,6 +36,9 @@ class Directories extends Files {
 
         $dirName = $dir['dirName'];
 
+        $dirName = ltrim($dirName);
+        $dirName = rtrim($dirName);
+
         if (strlen($dirName) > 30) {
             $response = [
                 "status" => false,
@@ -127,7 +130,123 @@ class Directories extends Files {
     // обновление информации папки
     public function updateDir(array $params)
     {
+        session_start();
 
+        if (!$this->checkAuth($_SESSION)) {
+            $response = [
+                "status" => false,
+                "message" => 'Необходимо авторизоваться!'
+            ];
+
+            echo json_encode($response);
+            die(http_response_code(403));
+        }
+
+        $user = $this->getUserId(session_id(), $_SESSION['user']);
+
+        if (!$user['status']) {
+            $response = [
+                "status" => false,
+                "message" => $user['message']
+            ];
+
+            echo json_encode($response);
+            die(http_response_code(403));
+        }
+
+        $input = json_decode(file_get_contents('php://input'), true);
+
+        $newDirName = $input['newDirName'];
+        $oldDirName = $input['oldDirName'];
+        $currentPath = $input['currentPath'];
+
+        $newDirName = ltrim($newDirName);
+        $newDirName = rtrim($newDirName);
+
+        $userId = $user['id'];
+        $dirId = $params[0];
+
+        if ($newDirName === '') {
+            $response = [
+                "status" => false,
+                "message" => 'Поле не должно быть пустым!'
+            ];
+
+            echo json_encode($response);
+            die();
+        }
+
+        if ($newDirName === $oldDirName) { // проверка на совпадение нового и старого имени папки
+            $response = [
+                "status" => false,
+                "message" => 'Новое имя не должно совпадать со старым!'
+            ];
+
+            echo json_encode($response);
+            die();
+        }
+
+        $newPath = $currentPath . $newDirName . '/';
+
+        // проверка на существование папки в данном месте с таким именем
+        $checkDirName = $this->connection->prepare("SELECT * FROM `directories` WHERE `name` = :newName AND `user_id` = :userId AND `path` = :path");
+        $checkDirName->bindValue('newName', $newDirName);
+        $checkDirName->bindValue('userId', $userId);
+        $checkDirName->bindValue('path', $newPath);
+
+        // изменение имени папки и пути в таблице папок
+        $renameDir = $this->connection->prepare("UPDATE `directories` SET `path` = :newPath, `name` = :newName WHERE `user_id` = :userId AND `dir_id` = :dirId");
+        $renameDir->bindValue('newPath', $newPath);
+        $renameDir->bindValue('newName', $newDirName);
+        $renameDir->bindValue('userId', $userId);
+        $renameDir->bindValue('dirId', $dirId);
+
+        // изменение имени папки в таблице файлов
+        $encodedNewDirName = $this->checkFileOrDirName($newDirName);
+
+        $renameDirAtFiles = $this->connection->prepare("UPDATE `files` SET `encoded_name` = :newEncodedName, `real_name` = :newRealName WHERE `belong_dir_id` = :dirId AND `id` = :userId");
+        $renameDirAtFiles->bindValue('newEncodedName', $encodedNewDirName);
+        $renameDirAtFiles->bindValue('newRealName', $newDirName);
+        $renameDirAtFiles->bindValue('dirId', $dirId);
+        $renameDirAtFiles->bindValue('userId', $userId);
+
+        try {
+            $this->connection->beginTransaction();
+
+            $checkDirName->execute();
+            $result = $checkDirName->fetchAll(\PDO::FETCH_ASSOC);
+
+            if (count($result) > 0) {
+                $response = [
+                    "status" => false,
+                    "message" => 'Папка с таким именем в данном месте уже существует!'
+                ];
+
+                echo json_encode($response);
+                die();
+            }
+
+            $renameDir->execute();
+            $renameDirAtFiles->execute();
+
+            $this->connection->commit();
+
+            $response = [
+                "status" => true,
+                "message" => 'Папка была успешно переименована'
+            ];
+
+            echo json_encode($response);
+        } catch (\PDOException $exception) {
+            $this->connection->rollBack();
+
+            $response = [
+                "status" => false,
+                "message" => $exception->getMessage()
+            ];
+
+            echo json_encode($response);
+        }
     }
 
     // получение информации конкретной папки
@@ -261,53 +380,111 @@ class Directories extends Files {
         $userId = $user['id']; // id пользователя
         $dirId = $params[0]; // id удаляемой папки
 
-        // удаление всех файлов в папке перед удалением самой папки
-        $getAllDirFiles = $this->connection->prepare("SELECT `encoded_name` FROM `files` WHERE `dir_id` = :dirId AND `id` = :userId");
-        $getAllDirFiles->bindValue('dirId', $dirId);
-        $getAllDirFiles->bindValue('userId', $userId);
+        // ищем path папки для дальнейших манипуляций
+        $getDirPath = $this->connection->prepare("SELECT `path` FROM `directories` WHERE `dir_id` = :dirId AND `user_id` = :userId");
+        $getDirPath->bindValue('dirId', $dirId);
+        $getDirPath->bindValue('userId', $userId);
 
-        // удаление всех файлов удаляемой папки в таблице files
-        $deleteFilesFromTable = $this->connection->prepare("DELETE FROM `files` WHERE `dir_id` = :dirId AND `id` = :userId");
-        $deleteFilesFromTable->bindValue('dirId', $dirId);
-        $deleteFilesFromTable->bindValue('userId', $userId);
+        $getDirPath->execute();
+        $path = $getDirPath->fetchAll(\PDO::FETCH_ASSOC);
+        $path = $path[0]['path']; // путь удаляемой папки
 
-        // удаление папки из таблицы files
-        $deleteDirFromFiles = $this->connection->prepare("DELETE FROM `files` WHERE `belong_dir_id` = :dirId AND `id` = :userId");
-        $deleteDirFromFiles->bindValue('dirId', $dirId);
-        $deleteDirFromFiles->bindValue('userId', $userId);
+        // ищем все папки в удаляемой папке
+        $getAllDirs = $this->connection->prepare("SELECT `dir_id` FROM `directories` WHERE `path` LIKE '$path%' AND `user_id` = :userId");
+        $getAllDirs->bindValue('userId', $userId);
 
-        // удаление папки из таблицы directories
-        $deleteDirFromDirs = $this->connection->prepare("DELETE FROM `directories` WHERE `dir_id` = :dirId AND `user_id` = :userId");
-        $deleteDirFromDirs->bindValue('dirId', $dirId);
-        $deleteDirFromDirs->bindValue('userId', $userId);
+        $getAllDirs->execute();
+        $result = $getAllDirs->fetchAll(\PDO::FETCH_ASSOC);
+
+        $newArray = [];
+
+        array_walk_recursive($result, function ($item) use (&$newArray) { // преобразовываем массив в одномерный для удобной работы с ним
+            $newArray[] = $item;
+        });
+
+        // ищем id файлов, которые находятся в данных папках
+        $searchFiles = $this->connection->prepare("SELECT `file_id` FROM `files` WHERE `dir_id` = :dirId AND `id` = :userId");
+        $searchFiles->bindValue('userId', $userId);
+        $searchFiles->bindParam('dirId', $idForDir);
+
+        // ищем закодированные имена файлов
+        $searchEncodedFileNames = $this->connection->prepare("SELECT `encoded_name` FROM `files` WHERE `file_id` = :fileId AND `id` = :userId AND `type` = 'file'");
+        $searchEncodedFileNames->bindValue('userId', $userId);
+        $searchEncodedFileNames->bindParam('fileId', $idForFile);
+
+        // удаляем строки файлов из таблицы файлов
+        $deleteFromFiles = $this->connection->prepare("DELETE FROM `files` WHERE `file_id` = :fileId AND `id` = :userId AND `type` = 'file'");
+        $deleteFromFiles->bindValue('userId', $userId);
+        $deleteFromFiles->bindParam('fileId', $idForFile);
+
+        // удаляем строки папок из таблицы файлов
+        $deleteDirsFromFiles = $this->connection->prepare("DELETE FROM `files` WHERE `belong_dir_id` = :dirId AND `id` = :userId AND `type` = 'dir'");
+        $deleteDirsFromFiles->bindValue('userId', $userId);
+        $deleteDirsFromFiles->bindParam('dirId', $idDir);
+
+        // удаляем строки из таблицы directories
+        $deleteDirs = $this->connection->prepare("DELETE FROM `directories` WHERE `dir_id` = :dirId AND `user_id` = :userId");
+        $deleteDirs->bindValue('userId', $userId);
+        $deleteDirs->bindParam('dirId',  $dirId);
 
         try {
             $this->connection->beginTransaction();
 
-            $getAllDirFiles->execute();
-            $files = $getAllDirFiles->fetchAll(\PDO::FETCH_ASSOC);
+            $filesId = []; // id удаляемых файлов и папок в таблице files
 
-            // удаление файлов из главного хранилища
-            foreach ($files as $file) {
-                $link = self::PATH_TO_STORAGE . $file['encoded_name'];
+            foreach ($newArray as $idForDir) {
+                $searchFiles->execute();
 
-                unlink($link);
+                $filesId[] = $searchFiles->fetchAll(\PDO::FETCH_ASSOC);
             }
 
-            $deleteFilesFromTable->execute();
-            $deleteDirFromFiles->execute();
-            $deleteDirFromDirs->execute();
+            foreach ($newArray as $idDir) {
+                $deleteDirsFromFiles->execute();
+            }
+
+            $newFilesId = [];
+
+            array_walk_recursive($filesId, function ($item) use (&$newFilesId) { // преобразовываем массив в одномерный для удобной работы с ним
+                $newFilesId[] = $item;
+            });
+
+            $encodedFileNamesArray = []; // массив для закодированных имен файлов для последующего преобразования массива в удобный для работы вид
+
+            foreach ($newFilesId as $idForFile) {
+                $searchEncodedFileNames->execute();
+
+                $encodedFileNamesArray[] = $searchEncodedFileNames->fetchAll(\PDO::FETCH_ASSOC);
+
+                $deleteFromFiles->execute();
+            }
+
+            $newEncodedNamesArray = []; // массив с именами файлов, которые будут удалены из папки storage
+
+            array_walk_recursive($encodedFileNamesArray, function ($item) use (&$newEncodedNamesArray) {
+                $newEncodedNamesArray[] = $item;
+            });
+
+            foreach ($newEncodedNamesArray as $name) {
+                $path = self::PATH_TO_STORAGE . $name;
+
+                unlink($path); // удаление файлов из главного хранилища (./storage)
+            }
+
+            foreach ($newArray as $dirId) {
+                $deleteDirs->execute();
+            }
 
             $this->connection->commit();
-        } catch (\PDOException $exception) {
-            $this->connection->rollBack();
 
-            $response = [
+            echo json_encode([
+               "status" => true,
+               "message" => 'Папка была успешно удалена'
+            ]);
+        } catch (\PDOException $exception) {
+            echo json_encode([
                 "status" => false,
                 "message" => $exception->getMessage()
-            ];
-
-            echo json_encode($response);
+            ]);
         }
     }
 }

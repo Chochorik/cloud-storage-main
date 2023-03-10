@@ -87,7 +87,7 @@ if (!$_SESSION['admin']) {
             <form class="modal__update">
                 <label class="modal__label">
                     ID
-                    <input class="modal__input input__id" type="number" placeholder="ID" name="id">
+                    <input class="modal__input input__id" type="number" placeholder="ID" name="id" disabled>
                 </label>
                 <label class="modal__label">
                     Login

@@ -1,15 +1,26 @@
 import getDirInfo from "./modules/get-dir-info.js";
 
 export const $mainList = document.querySelector('.main__btn-list');
-export const $btnPathBack = document.getElementById('btn-back');
 export const $mainSection = document.querySelector('.main__container');
+export const $overlay = document.getElementById('overlay-modal');
+
+const $displayPath = document.querySelector('.main__display-folders');
+
+export function getPath() { // получение пути
+    const dataPath = $displayPath.textContent;
+
+    const normalPath = dataPath.trim();
+
+    return normalPath;
+}
 
 (() => {
     const $logoutBtn = document.querySelector('.header__logout'),
           $menuBtn = document.querySelector('.main__menu-btn'),
           $menu = document.querySelector('.main__list');
 
-    const $displayPath = document.querySelector('.main__display-folders');
+    
+    const $btnPathBack = document.getElementById('btn-back');
 
     // id кнопки
     let pathId;
@@ -20,7 +31,6 @@ export const $mainSection = document.querySelector('.main__container');
 
     // модальные окна и подложка
     const $modalCreateDir = document.querySelector('.modal-create-dir'),
-          $overlay = document.getElementById('overlay-modal'),
           $closeCreateDirModal = document.querySelector('.modal__close-create'),
           $uploadFileModal = document.querySelector('.modal-upload-file'),
           $closeUploadModal = document.querySelector('.modal-upload-file-close');
@@ -28,14 +38,6 @@ export const $mainSection = document.querySelector('.main__container');
     const $createDirForm = document.querySelector('.modal-create-dir__form');
     const $uploadFileBtnConfirm = document.getElementById('upload-file-form');
     const $uploadMessageArea = document.querySelector('.modal-upload-file__message');
-
-    function getPath() {
-        const dataPath = $displayPath.textContent;
-
-        const normalPath = dataPath.trim();
-
-        return normalPath;
-    }
 
     async function logout() {
         const request = await fetch('http://www.cloud-storage.local/user/logout');
@@ -161,7 +163,7 @@ export const $mainSection = document.querySelector('.main__container');
             // перезагрузка страницы после успешного создания папки
             setTimeout(function() {
                 location.reload()
-            }, 1500)
+            }, 1000)
         } else {
             $messageArea.style = 'color: #FF4040';
             $messageArea.textContent = data.message;

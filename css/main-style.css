@@ -104,6 +104,16 @@
     visibility: visible;
 }
 
+.modal-delete-dir {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 30px;
+    padding-bottom: 30px;
+    min-height: 200px;
+}
+
 /* admin panel */
 .admin__table {
     width: 100%;
@@ -273,23 +283,28 @@
 }
 
 .modal-create-dir__title,
-.modal-upload-file__title {
+.modal-upload-file__title,
+.modal-delete-dir__title,
+.modal-rename-dir__title {
     color: var(--darkest-color);
 }
 
 .modal-create-dir__form,
-.modal-upload-file__form {
+.modal-upload-file__form,
+.modal-rename-dir__form {
     display: flex;
     flex-direction: column;
 }
 
-.modal-create-dir__label {
+.modal-create-dir__label,
+.modal-rename-dir__label {
     width: 100%;
     color: var(--dark-color);
     margin-bottom: 40px;
 }
 
-.modal-create-dir__input {
+.modal-create-dir__input,
+.modal-rename-dir__input {
     margin-top: 10px;
     min-width: 400px;
     height: 40px;
@@ -305,7 +320,9 @@
 }
 
 .modal-create-dir__btn,
-.modal-upload-file__btn {
+.modal-upload-file__btn,
+.modal-delete-dir__sumbit,
+.modal-rename-dir__btn {
     padding: 10px 40px;
     color: var(--white-color);
     background-color: var(--usual-color);
@@ -424,6 +441,10 @@
     align-items: end;
 }
 
+.change__container {
+    position: relative;
+}
+
 .btn__change {
     display: inline-block;
     width: 20px;
@@ -432,4 +453,80 @@
     background-position: center center;
     background-size: contain;
     background-repeat: no-repeat;
+}
+
+.change__menu {
+    position: absolute;
+    top: 20px;
+    left: -90px;
+    width: 200px;
+    height: 80px;
+    background-color: var(--white-color);
+    border: 1px solid var(--dark-color);
+    border-radius: 3px;
+    z-index: 10;
+    transform-origin: top;
+    transform: scaleY(0);
+    opacity: 0;
+    transition: transform .3s ease, opacity .3s ease;
+}
+
+.change__menu.active {
+    transform: scaleY(1);
+    opacity: 1;
+}
+
+.file-change__menu {
+    height: 110px;
+}
+
+.change__list {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-around;
+    height: 100%;
+}
+
+.change-menu__close {
+    position: absolute;
+    right: 0;
+    width: 20px;
+    height: 20px;
+    background-image: url('/media/cross.svg');
+    background-position: center center;
+    background-size: contain;
+    background-repeat: no-repeat;
+}
+
+.action__btn {
+    font-weight: 600;
+    color: var(--darkest-color);
+}
+
+/* modal rename dir */
+.modal-rename-dir {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding-top: 30px;
+    padding-bottom: 30px;
+    min-height: 250px;
+}
+
+.modal-rename-dir__input {
+    margin-bottom: 30px;
+}
+
+.modal-rename-dir__message {
+    margin-bottom: 20px;
+}
+
+.modal-rename-dir__title {
+    margin-bottom: 15px;
+}
+
+.modal-rename-dir__form {
+    align-items: center;
 }

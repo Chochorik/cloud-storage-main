@@ -54,6 +54,7 @@ $router->put('files/*', [Files::class, 'updateFile']); // обновление �
 $router->delete('files/*', [Files::class, 'deleteFile']); // удаление файла
 
 // endpoint'ы для директорий
+$router->get('directiries', [Directories::class, 'getDirList']); // получение списка папок, в которые можно перемещать файлы
 $router->get('directory/*', [Directories::class, 'getDirInfo']); // получение информации о конкретной папке
 $router->post('directory', [Directories::class, 'createDir']); // создание папки
 $router->put('directory/*', [Directories::class, 'updateDir']); // обновление информации о папке

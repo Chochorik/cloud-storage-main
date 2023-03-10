@@ -1,15 +1,14 @@
-import { $mainList, $btnPathBack } from "../main.js";
+import { $mainList } from "../main.js";
 import getDirInfo from "./get-dir-info.js";
 import createChangeBtn from "./create-change-btn.js";
 
 export default function createDirBtn(dir) { // создание кнопки для папки
     const $displayPath = document.querySelector('.main__display-folders');
-    const pathInfo = $displayPath.textContent;
 
     const $areaForDir = document.createElement('li');
     $areaForDir.className = 'list__item';
 
-    const $changeBtn = createChangeBtn();
+    const $changeBtn = createChangeBtn('change-dir__btn', dir['dir_id'], dir['real_name']);
 
     const $btnsDiv = document.createElement('div'); // обертка для кнопок
     $btnsDiv.className = 'btns__div';

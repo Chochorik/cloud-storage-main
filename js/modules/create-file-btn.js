@@ -7,7 +7,7 @@ export default async function createFileBtn(file) {
     const $btnContainer = document.createElement('div');
     $btnContainer.className = 'file__container file';
 
-    const $changeBtn = createChangeBtn();
+    const $changeBtn = createChangeBtn('file-change__btn', file['file_id']);
 
     const $btnsDiv = document.createElement('div'); // обертка для кнопок
     $btnsDiv.className = 'btns__div';
