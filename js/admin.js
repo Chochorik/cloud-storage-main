@@ -76,7 +76,7 @@
             $closeModal = document.querySelector('.modal__cross'),
             $confirmBtn = document.querySelector('.modal__confirm-btn');
 
-        const $id = document.querySelector('.input__id'),
+        const $id = document.querySelector('.modal-update__span'),
             $login = document.querySelector('.input__login'),
             $email = document.querySelector('.input__email'),
             $role = document.querySelector('.input__role');
@@ -95,7 +95,7 @@
             if (data.status) {
                 const array = data.user;
     
-                $id.value = array['id'];
+                $id.textContent = array['id'];
                 $login.value = array['login'];
                 $email.value = array['email'];
                 $role.value = array['role'];
@@ -110,20 +110,13 @@
 
             const $error = document.querySelector('.modal__message');
 
-            const request = await fetch(`http://www.cloud-storage.local/admin/users/${$button.dataset.id}`);
-            const data = await request.json();
-
-            const array = data.user;
-
             const updateRequest = await fetch(`http://www.cloud-storage.local/admin/users/${$confirmBtn.dataset.id}`, {
                 method: 'PUT',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({
-                    id: $id.value,
                     login: $login.value,
                     email: $email.value,
                     role: $role.value,
-                    oldData: array
                 })
             })
 

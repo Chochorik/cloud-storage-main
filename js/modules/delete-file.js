@@ -1,13 +1,13 @@
 import { $overlay } from "../main.js";
 
-export default async function showDeleteDirModal(id) {
-    const $modal = document.querySelector('.modal-delete-dir'),
-          $closeModal = document.querySelector('.modal-delete-dir__close'),
-          $submitBtn = document.querySelector('.modal-delete-dir__sumbit'),
-          $messageArea = document.querySelector('.modal-delete-dir__message');
+export default async function showDeleteFileModal(id) {
+    const $modal = document.querySelector('.modal-delete-file'),
+          $closeModal = document.querySelector('.modal-delete-file__close'),
+          $submitBtn = document.querySelector('.modal-delete-file__sumbit'),
+          $messageArea = document.querySelector('.modal-delete-file__message');
 
     $submitBtn.dataset.id = id;
-    $messageArea.textContent = ''; // обнуление поля сообщений
+    $messageArea.textContent = '';
 
     $modal.classList.add('activeModal');
     $overlay.classList.add('activeModal');
@@ -22,7 +22,7 @@ export default async function showDeleteDirModal(id) {
     $submitBtn.addEventListener('click', async function(e) {
         e.preventDefault();
 
-        const request = await fetch(`http://www.cloud-storage.local/directory/${$submitBtn.dataset.id}`, {
+        const request = await fetch(`http://www.cloud-storage.local/files/${$submitBtn.dataset.id}`, {
             method: 'DELETE'
         });
         const data = await request.json();
@@ -31,7 +31,7 @@ export default async function showDeleteDirModal(id) {
             $messageArea.style = 'color: var(--usual-color)';
             $messageArea.textContent = data.message;
             
-            // перезагрузка страницы после успешного создания папки
+            // перезагрузка страницы после успешного удаления файла
             setTimeout(function() {
                 location.reload()
             }, 500)

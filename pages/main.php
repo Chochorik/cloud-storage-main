@@ -150,6 +150,38 @@ if (!$_SESSION['authorized']) {
                 Подтвердите удаление папки
             </button>
         </div>
+        <div class="modal modal-delete-file">
+            <!--   Svg иконка для закрытия окна  -->
+            <svg class="modal__cross modal-delete-file__close" width="29" height="29" viewBox="0 0 29 29" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M22.2333 7.73333L21.2666 6.76666L14.4999 13.5334L7.73324 6.7667L6.76658 7.73336L13.5332 14.5L6.7666 21.2667L7.73327 22.2333L14.4999 15.4667L21.2666 22.2334L22.2332 21.2667L15.4666 14.5L22.2333 7.73333Z" fill="#B0B0B0" />
+            </svg>
+            <h2 class="modal-delete-file__title">
+                Удалить файл?
+            </h2>
+            <p class="modal-delete-file__message"></p>
+            <button class="modal-delete-file__sumbit"> 
+                Подтвердите удаление файла
+            </button>
+        </div>
+        <div class="modal modal-rename-file">
+            <!--   Svg иконка для закрытия окна  -->
+            <svg class="modal__cross modal-rename-file__close" width="29" height="29" viewBox="0 0 29 29" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M22.2333 7.73333L21.2666 6.76666L14.4999 13.5334L7.73324 6.7667L6.76658 7.73336L13.5332 14.5L6.7666 21.2667L7.73327 22.2333L14.4999 15.4667L21.2666 22.2334L22.2332 21.2667L15.4666 14.5L22.2333 7.73333Z" fill="#B0B0B0" />
+            </svg>
+            <h2 class="modal-rename-file__title">
+                Переименовать файл
+            </h2>
+            <form class="modal-rename-file__form" id="create-file-form">
+                <p class="modal-rename-file__message"></p>
+                <label class="modal-rename-file__label">
+                    Введите новое файла
+                    <input class="modal-rename-file__input" type="text" placeholder="Название файла" name="file-name">
+                </label>
+                <button type="submit" class="modal-rename-file__btn">
+                    Переименовать
+                </button>
+            </form>
+        </div>
         <!-- Подложка под модальным окном -->
         <div class="overlay" id="overlay-modal"></div>
     </div>

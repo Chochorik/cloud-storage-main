@@ -104,7 +104,8 @@
     visibility: visible;
 }
 
-.modal-delete-dir {
+.modal-delete-dir,
+.modal-delete-file {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -118,6 +119,11 @@
 .admin__table {
     width: 100%;
     border-collapse: collapse;
+}
+
+.modal-update__id {
+    color: #444;
+    opacity: .7;
 }
 
 .table__th {
@@ -285,26 +291,31 @@
 .modal-create-dir__title,
 .modal-upload-file__title,
 .modal-delete-dir__title,
-.modal-rename-dir__title {
+.modal-rename-dir__title,
+.modal-delete-file__title,
+.modal-rename-file__title {
     color: var(--darkest-color);
 }
 
 .modal-create-dir__form,
 .modal-upload-file__form,
-.modal-rename-dir__form {
+.modal-rename-dir__form,
+.modal-rename-file__form {
     display: flex;
     flex-direction: column;
 }
 
 .modal-create-dir__label,
-.modal-rename-dir__label {
+.modal-rename-dir__label,
+.modal-rename-file__label {
     width: 100%;
     color: var(--dark-color);
     margin-bottom: 40px;
 }
 
 .modal-create-dir__input,
-.modal-rename-dir__input {
+.modal-rename-dir__input,
+.modal-rename-file__input {
     margin-top: 10px;
     min-width: 400px;
     height: 40px;
@@ -322,7 +333,9 @@
 .modal-create-dir__btn,
 .modal-upload-file__btn,
 .modal-delete-dir__sumbit,
-.modal-rename-dir__btn {
+.modal-rename-dir__btn,
+.modal-delete-file__sumbit,
+.modal-rename-file__btn {
     padding: 10px 40px;
     color: var(--white-color);
     background-color: var(--usual-color);
@@ -506,7 +519,8 @@
 }
 
 /* modal rename dir */
-.modal-rename-dir {
+.modal-rename-dir,
+.modal-rename-file {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
@@ -519,7 +533,9 @@
     margin-bottom: 30px;
 }
 
-.modal-rename-dir__message {
+.modal-rename-dir__message,
+.modal-delete-file__message,
+.modal-create-dir__message {
     margin-bottom: 20px;
 }
 

@@ -1,5 +1,7 @@
 import showDeleteDirModal from "./delete-dir.js";
 import showRenameDirModal from "./rename-dir.js";
+import showDeleteFileModal from "./delete-file.js";
+import showUpdateFileModal from "./update-file.js";
 
 export default function createChangeBtn(name, id, fileOrDirName) { // функция для создания кнопки для открытия контекстного меню папки/файла
     const $changeContainer = document.createElement('div'); 
@@ -94,6 +96,18 @@ function createChangeMenu(name, id, fileOrDirName) { // создает меню 
         $actionMove.append($moveBtn);
         $actionDelete.append($deleteBtn);
         $actionShare.append($shareBtn);
+
+        $deleteBtn.addEventListener('click', async function(e) {
+            e.preventDefault();
+
+            showDeleteFileModal(id);
+        }) 
+
+        $renameBtn.addEventListener('click', async function(e) {
+            e.preventDefault();
+
+            showUpdateFileModal(id);
+        })
 
         $actionsList.append($actionRename);
         $actionsList.append($actionMove);

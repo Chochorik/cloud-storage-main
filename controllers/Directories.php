@@ -481,6 +481,7 @@ class Directories extends Files {
                "message" => 'Папка была успешно удалена'
             ]);
         } catch (\PDOException $exception) {
+            $this->connection->rollBack();
             echo json_encode([
                 "status" => false,
                 "message" => $exception->getMessage()

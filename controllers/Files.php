@@ -255,12 +255,187 @@ class Files
     // изменение файла
     public function updateFile(array $params)
     {
+        session_start();
 
+        if (!$this->checkAuth($_SESSION)) {
+            json_encode([
+                "status" => false,
+                "message" => 'Необходимо авторизоваться!'
+            ]);
+            die(http_response_code(403));
+        }
+
+        $user = $this->getUserId(session_id(), $_SESSION['user']);
+
+        if (!$user['status']) {
+            $response = [
+                "status" => false,
+                "message" => $user['message']
+            ];
+
+            echo json_encode($response);
+            die(http_response_code(403));
+        }
+
+        $userId = $user['id']; // id пользователя
+        $fileId = $params[0]; // id изменяемого файла
+        $input = json_decode(file_get_contents('php://input'), true); // получаем данные с формы
+
+        $method = $input['method'];
+
+        if ($method === 'rename') {
+            $newFileName = trim($input['newFileName']);
+            $path = trim($input['path']);
+
+            if ($newFileName === '') {
+                $response = [
+                    "status" => false,
+                    "message" => 'Поле не должно быть пустым!'
+                ];
+                echo json_encode($response);
+                die();
+            }
+
+            // получаем информацию об изменяемом файле
+            $getFile = $this->connection->prepare("SELECT * FROM `files` WHERE `file_id` = :fileId AND `id` = :userId");
+            $getFile->bindValue('userId', $userId);
+            $getFile->bindValue('fileId', $fileId);
+
+            // ищем папку, в которой находится данный файл
+            $getDir = $this->connection->prepare("SELECT `dir_id` FROM `directories` WHERE `path` = :path AND `user_id` = :userId");
+            $getDir->bindValue('path', $path);
+            $getDir->bindValue('userId', $userId);
+
+            // проверка на существование файла с таким именем в данной папке
+            $getDirFiles = $this->connection->prepare("SELECT `real_name` FROM `files` WHERE `dir_id` = :dirId AND `id` = :userId AND `real_name` = :newRealName");
+            $getDirFiles->bindValue('userId', $userId);
+            $getDirFiles->bindValue('newRealName', $newFileName);
+            $getDirFiles->bindParam('dirId', $dirId);
+
+            $updateFile = $this->connection->prepare("UPDATE `files` SET `real_name` = :newRealName WHERE `id` = :userId AND `file_id` = :fileId");
+            $updateFile->bindValue('userId', $userId);
+            $updateFile->bindValue('newRealName', $newFileName);
+            $updateFile->bindValue('fileId', $fileId);
+
+            try {
+                $this->connection->beginTransaction();
+
+                $getFile->execute();
+
+                $fileInfo = $getFile->fetch(\PDO::FETCH_ASSOC);
+
+                $oldRealName = $fileInfo['real_name'];
+
+                if ($oldRealName === $newFileName) {
+                    $response = [
+                        "status" => false,
+                        "message" => 'Новое имя файла не должно совпадать со старым!'
+                    ];
+                    echo json_encode($response);
+                    die();
+                }
+
+                $getDir->execute();
+
+                $dir = $getDir->fetch(\PDO::FETCH_ASSOC);
+                $dirId = $dir['dir_id'];
+
+                $getDirFiles->execute();
+                $allFiles = $getDirFiles->fetchAll(\PDO::FETCH_ASSOC);
+
+                if (count($allFiles) > 0) {
+                    $response = [
+                        "status" => false,
+                        "message" => 'Файл с таким именем уже существует в данной папке!'
+                    ];
+                    echo json_encode($response);
+                    die();
+                }
+
+                $updateFile->execute();
+
+                $this->connection->commit();
+
+                $response = [
+                    "status" => true,
+                    "message" => 'Файл был успешно переименован'
+                ];
+                echo json_encode($response);
+            } catch (\PDOException $exception) {
+                $this->connection->rollBack();
+                $response = [
+                    "status" => false,
+                    "message" => $exception->getMessage()
+                ];
+                echo json_encode($response);
+            }
+
+            exit;
+        }
+
+        if ($method === 'move') {
+
+
+            exit;
+        }
     }
 
     // удаление файла
     public function deleteFile(array $params)
     {
+        session_start();
 
+        if (!$this->checkAuth($_SESSION)) {
+            json_encode([
+                "status" => false,
+                "message" => 'Необходимо авторизоваться!'
+            ]);
+            die(http_response_code(403));
+        }
+
+        $user = $this->getUserId(session_id(), $_SESSION['user']);
+
+        if (!$user['status']) {
+            $response = [
+                "status" => false,
+                "message" => $user['message']
+            ];
+
+            echo json_encode($response);
+            die(http_response_code(403));
+        }
+
+        $userId = $user['id']; // id пользователя
+        $fileId = $params[0]; // id удаляемого файла
+
+        // получаем закодированное имя файла для удаления в главном хранилище (./storage)
+        $getEncodedFileName = $this->connection->prepare("SELECT `encoded_name` FROM `files` WHERE `id` = :userId AND `file_id` = :fileId");
+        $getEncodedFileName->bindValue('userId', $userId);
+        $getEncodedFileName->bindValue('fileId', $fileId);
+
+        // удаление файла из БД
+        $deleteFileFromTable = $this->connection->prepare("DELETE FROM `files` WHERE `file_id` = :fileId AND `id` = :userId");
+        $deleteFileFromTable->bindValue('userId', $userId);
+        $deleteFileFromTable->bindValue('fileId', $fileId);
+
+        $getEncodedFileName->execute();
+        $fileName = $getEncodedFileName->fetch(\PDO::FETCH_ASSOC);
+        $fileName = $fileName['encoded_name'];
+
+        // удаляем файл из папки
+        if (unlink(self::PATH_TO_STORAGE . $fileName)) {
+            $deleteFileFromTable->execute();
+
+            echo json_encode([
+                "status" => true,
+                "message" => 'Файл был успешно удален'
+            ]);
+        } else {
+            echo json_encode([
+                "status" => false,
+                "message" => 'Не удалось удалить данный файл'
+            ]);
+            die(http_response_code(500));
+        }
     }
 }

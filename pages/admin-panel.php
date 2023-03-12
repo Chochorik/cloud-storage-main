@@ -83,23 +83,22 @@ if (!$_SESSION['admin']) {
             <h2 class="modal__title">
                 Изменение данных клиента
             </h2>
+            <p class="modal-update__id">
+                #<span class="modal-update__span"></span>
+            </p>
             <p class="modal__message"></p>
             <form class="modal__update">
                 <label class="modal__label">
-                    ID
-                    <input class="modal__input input__id" type="number" placeholder="ID" name="id" disabled>
-                </label>
-                <label class="modal__label">
                     Login
-                    <input class="modal__input input__login" type="text" placeholder="Логин" name="login">
+                    <input class="modal__input input__login" type="text" placeholder="Логин" name="login" autocomplete="off">
                 </label>
                 <label class="modal__label">
                     Email
-                    <input class="modal__input input__email" type="email" placeholder="Email" name="email">
+                    <input class="modal__input input__email" type="email" placeholder="Email" name="email" autocomplete="off">
                 </label>
                 <label class="modal__label">
                     Role
-                    <input class="modal__input input__role" type="text" placeholder="Роль" name="role">
+                    <input class="modal__input input__role" type="text" placeholder="Роль" name="role" autocomplete="off">
                 </label>
             </form>
             <button class="modal__confirm-btn">

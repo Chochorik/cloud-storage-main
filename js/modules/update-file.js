@@ -1,13 +1,15 @@
-import { $overlay } from "../main.js";
+import { $overlay, getPath } from "../main.js";
 
-export default async function showDeleteDirModal(id) {
-    const $modal = document.querySelector('.modal-delete-dir'),
-          $closeModal = document.querySelector('.modal-delete-dir__close'),
-          $submitBtn = document.querySelector('.modal-delete-dir__sumbit'),
-          $messageArea = document.querySelector('.modal-delete-dir__message');
+export default async function showUpdateFileModal(id) {
+    const $modal = document.querySelector('.modal-rename-file'),
+          $closeModal = document.querySelector('.modal-rename-file__close'),
+          $submitBtn = document.querySelector('.modal-rename-file__btn'),
+          $messageArea = document.querySelector('.modal-rename-file__message');
+
+    const $fileName = document.querySelector('.modal-rename-file__input');
+    $fileName.value = '';
 
     $submitBtn.dataset.id = id;
-    $messageArea.textContent = ''; // обнуление поля сообщений
 
     $modal.classList.add('activeModal');
     $overlay.classList.add('activeModal');
@@ -22,19 +24,27 @@ export default async function showDeleteDirModal(id) {
     $submitBtn.addEventListener('click', async function(e) {
         e.preventDefault();
 
-        const request = await fetch(`http://www.cloud-storage.local/directory/${$submitBtn.dataset.id}`, {
-            method: 'DELETE'
+        const newFileName = $fileName.value;
+
+        const request = await fetch(`http://www.cloud-storage.local/files/${$submitBtn.dataset.id}`, {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                newFileName: newFileName,
+                method: 'rename',
+                path: getPath()
+            })
         });
         const data = await request.json();
 
         if (data.status) {
             $messageArea.style = 'color: var(--usual-color)';
             $messageArea.textContent = data.message;
-            
+
             // перезагрузка страницы после успешного создания папки
             setTimeout(function() {
                 location.reload()
-            }, 500)
+            }, 1000)
         } else {
             $messageArea.style = 'color: #FF4040';
             $messageArea.textContent = data.message;

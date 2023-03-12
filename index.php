@@ -62,8 +62,3 @@ $router->delete('directory/*', [Directories::class, 'deleteDir']); // удале
 
 $app = new Application($router);
 $app->run($_SERVER['REQUEST_URI'], $_SERVER['REQUEST_METHOD']);
-
-//if (http_response_code() === 404) {
-//    header('location: /notFound');
-//    exit();
-//}

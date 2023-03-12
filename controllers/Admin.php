@@ -151,24 +151,47 @@ class Admin {
     {
         session_start();
 
-        $data = json_decode(file_get_contents('php://input'), true);
+        if (!$this->checkAdmin(session_id())) {
+            $response = [
+                "status" => false,
+                "message" => 'Вы не являетесь администратором!'
+            ];
+
+            echo json_encode($response);
+            die(http_response_code(403));
+        }
+
+        if (!$this->checkAuth($_SESSION)) {
+            $response = [
+                "status" => false,
+                "message" => 'Необходимо авторизоваться!'
+            ];
+
+            echo json_encode($response);
+            die(http_response_code(403));
+        }
+
+        $id = $params[0]; // id изменяемого пользователя
+        $data = json_decode(file_get_contents('php://input'), true); // получение данных из формы
 
         // присваиваем новые значения
-        $newId = $data['id'];
         $newLogin = $data['login'];
         $newEmail = $data['email'];
         $newRole = $data['role'];
 
-        // старые данные пользователя для дальнейшего сравнения
-        $oldData = $data['oldData'];
-        $oldId = $oldData['id'];
-        $oldLogin = $oldData['login'];
-        $oldEmail = $oldData['email'];
-        $oldRole = $oldData['role'];
+        // получение старых данных пользователя
+        $oldData = $this->connection->prepare("SELECT * FROM `users_list` WHERE `id` = :userId");
+        $oldData->bindValue('userId', $id);
+
+        $oldData->execute();
+        $oldUser = $oldData->fetch(\PDO::FETCH_ASSOC);
+
+        $oldLogin = $oldUser['login'];
+        $oldEmail = $oldUser['email'];
+        $oldRole = $oldUser['role'];
 
         // проверка на пустоту полей
-        if ($newId === ''
-            || $newLogin === ''
+        if ($newLogin === ''
             || $newEmail === ''
             || $newRole === '') {
             $response = [
@@ -243,53 +266,9 @@ class Admin {
             }
         }
 
-        // проверка id
-        if ($newId !== '' && $newId !== $oldId) {
-            $pattern = '#^[0-9]+$#';
-
-            // проверка id на наличие других символов кроме цифр
-            if (preg_match($pattern, $newId)) {
-                if (strlen($newId) > 10) {
-                    $response = [
-                        "status" => false,
-                        "message" => 'Длина id превышает допустимое значение! (максимум 10 символов)'
-                    ];
-
-                    echo json_encode($response);
-                    die();
-                }
-
-                // проверка id на оригинальность
-                $statement = $this->connection->prepare("SELECT * FROM `users_list` WHERE `id` = :id");
-                $statement->bindValue('id', $newId);
-
-                $statement->execute();
-
-                $result = $statement->fetchAll(\PDO::FETCH_ASSOC);
-
-                if (count($result) > 0) {
-                    $response = [
-                        "status" => false,
-                        "message" => 'Пользователь с таким id уже существует!'
-                    ];
-
-                    echo json_encode($response);
-                    die();
-                }
-            } else {
-                $response = [
-                    "status" => false,
-                    "message" => 'В id должны быть только цифры!'
-                ];
-
-                echo json_encode($response);
-                die();
-            }
-        }
-
         // проверка роли на корректность
-        if ($newRole !== '' && ($newRole !== $oldRole)) {
-            if ($newRole !== 'admin' || $newRole !== 'user') {
+        if ($oldRole !== $newRole) {
+            if ($newRole !== 'admin' && $newRole !== 'user') {
                 $response = [
                     "status" => false,
                     "message" => 'Недопустимая роль! (только admin или user)'
@@ -300,51 +279,24 @@ class Admin {
             }
         }
 
-        if (!$this->checkAdmin(session_id())) {
-            $response = [
-                "status" => false,
-                "message" => 'Вы не являетесь администратором!'
-            ];
-
-            echo json_encode($response);
-            die(http_response_code(403));
-        }
-
-        if (!$this->checkAuth($_SESSION)) {
-            $response = [
-                "status" => false,
-                "message" => 'Необходимо авторизоваться!'
-            ];
-
-            echo json_encode($response);
-            die(http_response_code(403));
-        }
-
-        $id = $params[0];
-
-        $userPrepare = $this->connection->prepare("UPDATE `users_list` SET `id` = :newId, `login`= :newLogin, `email` = :newEmail, `role` = :newRole WHERE `id` = :userId");
-        $userPrepare->bindValue('newId', $newId);
+        $userPrepare = $this->connection->prepare("UPDATE `users_list` SET `login`= :newLogin, `email` = :newEmail, `role` = :newRole WHERE `id` = :userId");
         $userPrepare->bindValue('newLogin', $newLogin);
         $userPrepare->bindValue('newEmail', $newEmail);
         $userPrepare->bindValue('newRole', $newRole);
         $userPrepare->bindValue('userId', $id);
 
-        if ($userPrepare->execute()) {
-            $response = [
-                "status" => true,
-                "message" => 'Данные пользователя успешно изменены'
-            ];
-
-            echo json_encode($response);
-        } else {
-            $response = [
+        if (!$userPrepare->execute()) {
+            echo json_encode([
                 "status" => false,
                 "message" => 'Что-то пошло не так...'
-            ];
-
-            echo json_encode($response);
-            die();
+            ]);
+            die(http_response_code(500));
         }
+
+        echo json_encode([
+           "status" => true,
+           "message" => 'Пользователь был успешно изменен'
+        ]);
     }
 
     // удаление конкретного пользователя
@@ -374,24 +326,51 @@ class Admin {
 
         $id = $params[0];
 
+        $getEncodedFilesNames = $this->connection->prepare("SELECT `encoded_name` FROM `files` WHERE `type` = 'file' AND `id` = :userId");
+        $getEncodedFilesNames->bindValue('userId', $id);
+
+        $deleteFromFiles= $this->connection->prepare("DELETE FROM `files` WHERE `id` = :userId");
+        $deleteFromFiles->bindValue('userId', $id);
+
+        $deleteFromDirs = $this->connection->prepare("DELETE FROM `directories` WHERE `user_id` = :userId");
+        $deleteFromDirs->bindValue('userId', $id);
+
         $users = $this->connection->prepare("DELETE FROM `users_list` WHERE `id` = :id");
         $users->bindValue('id', $id);
 
-        if ($users->execute()) {
-            $response = [
+        try {
+            $this->connection->beginTransaction();
+
+            $getEncodedFilesNames->execute();
+            $fileNames = $getEncodedFilesNames->fetchAll(\PDO::FETCH_ASSOC);
+
+            $newFilesNamesArray = [];
+
+            array_walk_recursive($fileNames, function ($item) use (&$newFilesNamesArray) {
+                $newFilesNamesArray[] = $item;
+            });
+
+            foreach ($newFilesNamesArray as $name) {
+                unlink('./storage/' . $name);
+            }
+
+            $deleteFromFiles->execute();
+            $deleteFromDirs->execute();
+
+            $users->execute();
+
+            $this->connection->commit();
+
+            echo json_encode([
                 "status" => true,
-                "Пользователь был удалён"
-            ];
-
-            echo json_encode($response);
-            } else {
-            $response = [
+                "message" => 'Пользователь был успешно удален'
+            ]);
+        } catch (\PDOException $exception) {
+            $this->connection->rollBack();
+            echo json_encode([
                 "status" => false,
-                "message" => 'Пользователя с таким id не найдено'
-            ];
-
-            echo json_encode($response);
-            exit;
+                "message" => $exception->getMessage()
+            ]);
         }
     }
 }
