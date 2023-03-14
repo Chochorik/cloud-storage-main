@@ -59,6 +59,7 @@ $router->get('directory/*', [Directories::class, 'getDirInfo']); // получе
 $router->post('directory', [Directories::class, 'createDir']); // создание папки
 $router->put('directory/*', [Directories::class, 'updateDir']); // обновление информации о папке
 $router->delete('directory/*', [Directories::class, 'deleteDir']); // удаление папки
+$router->get('dirList', [Directories::class, 'getDirList']); // получение списка папок
 
 $app = new Application($router);
 $app->run($_SERVER['REQUEST_URI'], $_SERVER['REQUEST_METHOD']);

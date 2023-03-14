@@ -374,7 +374,89 @@ class Files
         }
 
         if ($method === 'move') {
+            if (!isset($input['newPath'])) {
+                $response = [
+                    "status" => false,
+                    "message" => 'Необходимо выбрать один из вариантов!'
+                ];
+                echo json_encode($response);
+                die();
+            }
 
+            $newPath = $input['newPath'];
+
+            // получение данных о файле
+            $getFile = $this->connection->prepare("SELECT * FROM `files` WHERE `file_id` = :fileId AND `id` = :userId");
+            $getFile->bindValue('userId', $userId);
+            $getFile->bindValue('fileId', $fileId);
+
+            // проверка на существование выбранной папки
+            $getNewDir = $this->connection->prepare("SELECT * FROM `directories` WHERE `path` = :newPath AND `user_id` = :userId");
+            $getNewDir->bindValue('newPath', $newPath);
+            $getNewDir->bindValue('userId', $userId);
+
+            // проверка существования файла с таким именем в выбранной папке
+            $checkThisDir = $this->connection->prepare("SELECT * FROM `files` WHERE `dir_id` = :dirId AND `real_name` = :realName AND `id` = :userId");
+            $checkThisDir->bindValue('userId', $userId);
+            $checkThisDir->bindParam('dirId', $id);
+            $checkThisDir->bindParam('realName', $fileRealName);
+
+            // перемещение файла в выбранную папку
+            $moveFile = $this->connection->prepare("UPDATE `files` SET `dir_id` = :dirId WHERE `file_id` = :fileId AND `id` = :userId");
+            $moveFile->bindValue('userId', $userId);
+            $moveFile->bindParam('dirId', $id);
+            $moveFile->bindValue('fileId', $fileId);
+
+            try {
+                $this->connection->beginTransaction();
+
+                $getFile->execute();
+                $file = $getFile->fetch(\PDO::FETCH_ASSOC);
+                $fileRealName = $file['real_name'];
+
+                $getNewDir->execute();
+                $dir = $getNewDir->fetch(\PDO::FETCH_ASSOC);
+
+                if (empty($dir)) {
+                    $response = [
+                        "status" => false,
+                        "message" => 'Такой папки не существует!'
+                    ];
+                    echo json_encode($response);
+                    die();
+                }
+
+                $id = $dir['dir_id']; // id папки, в которую будет перемещен файл
+
+                $checkThisDir->execute();
+                $result = $checkThisDir->fetchAll();
+
+                if (count($result) > 0) {
+                    $response = [
+                        "status" => false,
+                        "message" => 'Такой файл уже есть в выбранной папке!'
+                    ];
+                    echo json_encode($response);
+                    die();
+                }
+
+                $moveFile->execute();
+
+                $this->connection->commit();
+
+                $response = [
+                    "status" => true,
+                    "message" => 'Файл был успешно перемещен'
+                ];
+                echo json_encode($response);
+            } catch (\PDOException $exception) {
+                $this->connection->rollBack();
+                $response = [
+                    "status" => false,
+                    "message" => $exception->getMessage()
+                ];
+                echo json_encode($response);
+            }
 
             exit;
         }

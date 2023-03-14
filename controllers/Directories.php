@@ -488,4 +488,46 @@ class Directories extends Files {
             ]);
         }
     }
+
+    // получение списка папок пользователя
+    public function getDirList()
+    {
+        session_start();
+
+        if (!$this->checkAuth($_SESSION)) {
+            $response = [
+                "status" => false,
+                "message" => 'Необходимо авторизоваться!'
+            ];
+
+            echo json_encode($response);
+            die(http_response_code(403));
+        }
+
+        $user = $this->getUserId(session_id(), $_SESSION['user']);
+
+        if (!$user['status']) {
+            $response = [
+                "status" => false,
+                "message" => $user['message']
+            ];
+
+            echo json_encode($response);
+            die(http_response_code(403));
+        }
+
+        $userId = $user['id']; // id пользователя
+
+        $selectAllUserDirs = $this->connection->prepare("SELECT `dir_id`, `path` FROM `directories` WHERE `user_id` = :userId");
+        $selectAllUserDirs->bindValue('userId', $userId);
+
+        $selectAllUserDirs->execute();
+        $result = $selectAllUserDirs->fetchAll(\PDO::FETCH_ASSOC);
+
+        $response = [
+            "status" => true,
+            "dirList" => $result
+        ];
+        echo json_encode($response);
+    }
 }
