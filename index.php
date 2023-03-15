@@ -67,6 +67,7 @@ $router->post('get-user', [User::class, 'getUserByEmail']); // получени�
 $router->post('files/share', [Files::class, 'giveAccessToFile']); // предоставление доступа к файлу
 $router->get('files/share/*', [Files::class, 'getSharedUsersList']); // получение списка пользователей, которым был предоставлен доступ к файлу
 $router->delete('files/deny-access', [Files::class, 'denyAccessForUser']); // запрет на доступ к файлу пользователя
+$router->get('files-list/shared', [Files::class, 'getSharedFilesList']); // получение списка файлов, к которым есть доступ у пользователя
 
 $app = new Application($router);
 $app->run($_SERVER['REQUEST_URI'], $_SERVER['REQUEST_METHOD']);

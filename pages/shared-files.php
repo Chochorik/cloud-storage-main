@@ -13,7 +13,7 @@ if (!$_SESSION['authorized']) {
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script defer src="/js/shared-files.js"></script>
+    <script defer type="module" src="/js/shared-files.js"></script>
     <link rel="stylesheet" href="/css/normalize.css">
     <link rel="stylesheet" href="/css/basic.css">
     <link rel="stylesheet" href="/css/fonts.css">
@@ -52,7 +52,9 @@ if (!$_SESSION['authorized']) {
         </div>
     </header>
     <main class="main">
-
+        <section class="main__section">
+            <div class="container main__container"></div>
+        </section>
     </main>
 </body>
 </html>

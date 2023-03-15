@@ -709,4 +709,66 @@ class Files
             echo json_encode($response);
         }
     }
+
+    // список доступных пользователю файлов
+    public function getSharedFilesList() {
+        session_start();
+
+        if (!$this->checkAuth($_SESSION)) {
+            json_encode([
+                "status" => false,
+                "message" => 'Необходимо авторизоваться!'
+            ]);
+            die(http_response_code(403));
+        }
+
+        $user = $this->getUserId(session_id(), $_SESSION['user']);
+
+        if (!$user['status']) {
+            $response = [
+                "status" => false,
+                "message" => $user['message']
+            ];
+
+            echo json_encode($response);
+            die(http_response_code(403));
+        }
+
+        $userId = $user['id']; // id пользователя
+
+        // получение списка файлов, к которым есть доступ у пользователя
+        $getFilesList = $this->connection->prepare("SELECT `files`.`real_name`, `files`.`encoded_name` FROM `files`, `shared_files` WHERE `shared_files`.`user_id` = :userId AND `files`.`file_id` = `shared_files`.`file_id`");
+        $getFilesList->bindValue('userId', $userId);
+        $getFilesList->execute();
+
+        $result = $getFilesList->fetchAll(\PDO::FETCH_ASSOC);
+
+        if (count($result) == 0) {
+            $response = [
+                "status" => 'empty',
+                "message" => 'Вам пока не дали доступ к файлам...'
+            ];
+
+            echo json_encode($response);
+            die();
+        }
+
+        $newArray = [];
+
+        foreach ($result as $file) {
+            $link = self::PATH_TO_STORAGE . $file['encoded_name'];
+
+            $newArray[] = [
+                "real_name" => $file['real_name'],
+                "link" => $link
+            ];
+        }
+
+        $response = [
+            "status" => true,
+            "list" => $newArray
+        ];
+
+        echo json_encode($response);
+    }
 }

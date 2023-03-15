@@ -70,6 +70,11 @@ export default async function showShareFileModal(id) {
             $messageArea.textContent = '';
             $messageArea2.style = 'color: var(--usual-color)';
             $messageArea2.textContent = response.message;
+
+            setTimeout(function() {
+                $modal.classList.remove('activeModal');
+                $overlay.classList.remove('activeModal');
+            }, 1000)
         } else {
             $messageArea.textContent = '';
             $messageArea2.style = 'color: #FF4040';

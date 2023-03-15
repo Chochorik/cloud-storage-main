@@ -19,7 +19,6 @@ export function getPath() { // получение пути
           $menuBtn = document.querySelector('.main__menu-btn'),
           $menu = document.querySelector('.main__list');
 
-    
     const $btnPathBack = document.getElementById('btn-back');
 
     // id кнопки
@@ -127,7 +126,7 @@ export function getPath() { // получение пути
             $uploadMessageArea.style = 'color: var(--usual-color)';
             $uploadMessageArea.textContent = data.message;
 
-            // перезагрузка страницы после успешного создания папки
+            // перезагрузка страницы после успешного создания файла
             setTimeout(function() {
                 location.reload()
             }, 1500)
