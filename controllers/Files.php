@@ -500,6 +500,11 @@ class Files
         $deleteFileFromTable->bindValue('userId', $userId);
         $deleteFileFromTable->bindValue('fileId', $fileId);
 
+        // удаление разрешения на доступ к файлу другим пользователям
+        $deleteShares = $this->connection->prepare("DELETE FROM `shared_files` WHERE `file_id` = :fileId");
+        $deleteShares->bindValue('fileId', $fileId);
+        $deleteShares->execute();
+
         $getEncodedFileName->execute();
         $fileName = $getEncodedFileName->fetch(\PDO::FETCH_ASSOC);
         $fileName = $fileName['encoded_name'];

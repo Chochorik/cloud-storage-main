@@ -427,6 +427,10 @@ class Directories extends Files {
         $deleteDirs->bindValue('userId', $userId);
         $deleteDirs->bindParam('dirId',  $dirId);
 
+        // удаляем файлы из доступа
+        $deleteShares = $this->connection->prepare("DELETE FROM `shared_files` WHERE `file_id` = :fileId");
+        $deleteShares->bindParam('fileId', $idForFile);
+
         try {
             $this->connection->beginTransaction();
 
@@ -452,6 +456,8 @@ class Directories extends Files {
 
             foreach ($newFilesId as $idForFile) {
                 $searchEncodedFileNames->execute();
+
+                $deleteShares->execute();
 
                 $encodedFileNamesArray[] = $searchEncodedFileNames->fetchAll(\PDO::FETCH_ASSOC);
 
