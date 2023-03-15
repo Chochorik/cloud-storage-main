@@ -619,7 +619,7 @@ class Files
         $userId = $user['id']; // id владельца файла
 
         // получаем список пользователей, у которых есть доступ к файлу
-        $getUsersList = $this->connection->prepare("SELECT `users_list`.`id`, `users_list`.`login` FROM `users_list`, `shared_files` WHERE `shared_files`.`file_id` = :fileId AND `users_list`.`id` <> :userId");
+        $getUsersList = $this->connection->prepare("SELECT `users_list`.`id`, `users_list`.`login` FROM `users_list`, `shared_files` WHERE `shared_files`.`file_id` = :fileId AND `users_list`.`id` <> :userId AND `shared_files`.`user_id` = `users_list`.`id`");
         $getUsersList->bindValue('userId', $userId);
         $getUsersList->bindValue('fileId', $fileId);
         $getUsersList->execute();
