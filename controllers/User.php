@@ -230,7 +230,7 @@ class User {
                     $token->bindValue('session', session_id());
 
                     if ($token->execute()) {
-                        if ($result[0]['login'] === 'Admin') {
+                        if ($result[0]['role'] === 'admin') {
                             $_SESSION['admin'] = true;
                         } else {
                             $_SESSION['admin'] = false;
