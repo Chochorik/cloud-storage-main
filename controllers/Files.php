@@ -258,7 +258,7 @@ class Files
         session_start();
 
         if (!$this->checkAuth($_SESSION)) {
-            json_encode([
+            echo json_encode([
                 "status" => false,
                 "message" => 'Необходимо авторизоваться!'
             ]);
@@ -518,6 +518,195 @@ class Files
                 "message" => 'Не удалось удалить данный файл'
             ]);
             die(http_response_code(500));
+        }
+    }
+
+    // разрешение доступа к файлу
+    public function giveAccessToFile()
+    {
+        session_start();
+
+        if (!$this->checkAuth($_SESSION)) {
+            echo json_encode([
+                "status" => false,
+                "message" => 'Необходимо авторизоваться!'
+            ]);
+            die(http_response_code(403));
+        }
+
+        $user = $this->getUserId(session_id(), $_SESSION['user']);
+
+        if (!$user['status']) {
+            $response = [
+                "status" => false,
+                "message" => $user['message']
+            ];
+
+            echo json_encode($response);
+            die(http_response_code(403));
+        }
+
+        $input = json_decode(file_get_contents('php://input'), true);
+
+        $fileId = $input['fileId']; // получаем id файла, к которому необходимо предоставить доступ
+        $userId = $input['userId']; // получаем id пользователя, которому нужно предоставить доступ к файлу
+
+        // проверка на существование такой записи в БД
+        $checkAccess = $this->connection->prepare("SELECT * FROM `shared_files` WHERE `file_id` = :fileId AND `user_id` = :userId");
+        $checkAccess->bindValue('fileId', $fileId);
+        $checkAccess->bindValue('userId', $userId);
+        $checkAccess->execute();
+
+        $list = $checkAccess->fetchAll();
+
+        if (count($list) > 0) {
+            $response = [
+                "status" => false,
+                "message" => 'Доступ данному пользователю уже предоставлен!'
+            ];
+            echo json_encode($response);
+            die();
+        }
+
+        // запись в БД
+        $postAccess = $this->connection->prepare("INSERT INTO `shared_files`(`file_id`, `user_id`) VALUES (:fileId, :userId)");
+        $postAccess->bindValue('fileId', $fileId);
+        $postAccess->bindValue('userId', $userId);
+
+        if ($postAccess->execute()) {
+            $response = [
+                "status" => true,
+                "message" => 'Доступ был разрешен'
+            ];
+            echo json_encode($response);
+        } else {
+            $response = [
+                "status" => false,
+                "message" => 'Что-то пошло не так...'
+            ];
+            echo json_encode($response);
+            die();
+        }
+    }
+
+    // получение списка пользователей, у которых есть доступ к данному файлу
+    public function getSharedUsersList(array $params)
+    {
+        session_start();
+
+        if (!$this->checkAuth($_SESSION)) {
+            echo json_encode([
+                "status" => false,
+                "message" => 'Необходимо авторизоваться!'
+            ]);
+            die(http_response_code(403));
+        }
+
+        $user = $this->getUserId(session_id(), $_SESSION['user']);
+
+        if (!$user['status']) {
+            $response = [
+                "status" => false,
+                "message" => $user['message']
+            ];
+
+            echo json_encode($response);
+            die(http_response_code(403));
+        }
+
+
+        $fileId = $params[0]; // id файла
+        $userId = $user['id']; // id владельца файла
+
+        // получаем список пользователей, у которых есть доступ к файлу
+        $getUsersList = $this->connection->prepare("SELECT `users_list`.`id`, `users_list`.`login` FROM `users_list`, `shared_files` WHERE `shared_files`.`file_id` = :fileId AND `users_list`.`id` <> :userId");
+        $getUsersList->bindValue('userId', $userId);
+        $getUsersList->bindValue('fileId', $fileId);
+        $getUsersList->execute();
+
+        $result = $getUsersList->fetchAll(\PDO::FETCH_ASSOC);
+
+        $response = [
+            "status" => false,
+            "users" => $result
+        ];
+
+        echo json_encode($response);
+    }
+
+    // удаление разрешения на доступ к файлу
+    public function denyAccessForUser()
+    {
+        session_start();
+
+        if (!$this->checkAuth($_SESSION)) {
+            echo json_encode([
+                "status" => false,
+                "message" => 'Необходимо авторизоваться!'
+            ]);
+            die(http_response_code(403));
+        }
+
+        $user = $this->getUserId(session_id(), $_SESSION['user']);
+
+        if (!$user['status']) {
+            $response = [
+                "status" => false,
+                "message" => $user['message']
+            ];
+
+            echo json_encode($response);
+            die(http_response_code(403));
+        }
+
+        $input = json_decode(file_get_contents('php://input'), true);
+
+        $fileId = $input['fileId'];
+        $userId = $input['userId'];
+
+        // проверка на существование доступа к файлу
+        $checkAccess = $this->connection->prepare("SELECT * FROM `shared_files` WHERE `file_id` = :fileId AND `user_id` = :userId");
+        $checkAccess->bindValue('fileId', $fileId);
+        $checkAccess->bindValue('userId', $userId);
+
+        // отзыв доступа к файлу
+        $denyAccess = $this->connection->prepare("DELETE FROM `shared_files` WHERE `file_id` = :fileId AND `user_id` = :userId");
+        $denyAccess->bindValue('fileId', $fileId);
+        $denyAccess->bindValue('userId', $userId);
+
+        try {
+            $this->connection->beginTransaction();
+
+            $checkAccess->execute();
+
+            $list = $checkAccess->fetchAll();
+
+            if (count($list) == 0) {
+                $response = [
+                    "status" => false,
+                    "message" => 'У пользователя нет прав доступа!'
+                ];
+                echo json_encode($response);
+                die();
+            }
+
+            $denyAccess->execute();
+
+            $this->connection->commit();
+
+            $response = [
+                "status" => true,
+                "message" => 'Разрешение доступа данного пользователя было отозвано'
+            ];
+
+            echo json_encode($response);
+        } catch (\PDOException $exception) {
+            $this->connection->rollBack();
+            $response = [
+                "status" => false,
+                "message" => $exception->getMessage()
+            ];
+            echo json_encode($response);
         }
     }
 }

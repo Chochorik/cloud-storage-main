@@ -31,6 +31,7 @@ $router->get('authorization', [MainController::class, 'authorization']); // ст
 $router->get('registration', [MainController::class, 'registration']); // страница регистрации пользователя
 $router->get('recovery', [MainController::class, 'recoverPassword']); // страница для отправки ссылки для восстановления пароля
 $router->get("recovery/user/*", [MainController::class, 'newPass']); // страница для установки нового пароля (отправляется на почту)
+$router->get('shared-files', [MainController::class, 'sharedFiles']); // страница, где показываются файлы других пользователей, к которым у пользователя есть доступ
 
 $router->get('user/logout', [User::class, 'logout']); // endpoint для выхода из уч. записи
 
@@ -60,6 +61,12 @@ $router->post('directory', [Directories::class, 'createDir']); // создани
 $router->put('directory/*', [Directories::class, 'updateDir']); // обновление информации о папке
 $router->delete('directory/*', [Directories::class, 'deleteDir']); // удаление папки
 $router->get('dirList', [Directories::class, 'getDirList']); // получение списка папок
+
+// endpoint'ы для открытия доступа к файлу другим пользователям
+$router->post('get-user', [User::class, 'getUserByEmail']); // получение информации о пользователе по его email
+$router->post('files/share', [Files::class, 'giveAccessToFile']); // предоставление доступа к файлу
+$router->get('files/share/*', [Files::class, 'getSharedUsersList']); // получение списка пользователей, которым был предоставлен доступ к файлу
+$router->delete('files/deny-access', [Files::class, 'denyAccessForUser']); // запрет на доступ к файлу пользователя
 
 $app = new Application($router);
 $app->run($_SERVER['REQUEST_URI'], $_SERVER['REQUEST_METHOD']);

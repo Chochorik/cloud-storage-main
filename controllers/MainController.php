@@ -33,6 +33,11 @@ class MainController {
         require_once './pages/new-password.html';
     }
 
+    public function sharedFiles()
+    {
+        require_once './pages/shared-files.php';
+    }
+
     public function notFound()
     {
         require_once './pages/error.html';

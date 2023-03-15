@@ -33,6 +33,11 @@ if (!$_SESSION['authorized']) {
                 </p>
             </div>
             <div class="header__actions">
+                <a href="/shared-files">
+                    <button class="header__shared">
+                        Доступные файлы
+                    </button>
+                </a>
                 <?php if ($_SESSION['admin'] === true):?>
                     <a href="/admin/panel">
                         <button class="header__admin-panel">
@@ -197,6 +202,36 @@ if (!$_SESSION['authorized']) {
                     Переместить
                 </button>
             </form>
+        </div>
+        <div class="modal modal-share-file">
+            <!--   Svg иконка для закрытия окна  -->
+            <svg class="modal__cross modal-share-file__close" width="29" height="29" viewBox="0 0 29 29" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M22.2333 7.73333L21.2666 6.76666L14.4999 13.5334L7.73324 6.7667L6.76658 7.73336L13.5332 14.5L6.7666 21.2667L7.73327 22.2333L14.4999 15.4667L21.2666 22.2334L22.2332 21.2667L15.4666 14.5L22.2333 7.73333Z" fill="#B0B0B0" />
+            </svg>
+            <h2 class="modal-share-file__title">
+                Поделиться файлом
+            </h2>
+            <p class="modal-share-file__message"></p>
+            <p class="modal-share-file__message-2"></p>
+            <div class="modal-share-file__container share-container">
+                <div class="share-container__left">
+                    <p class="share-container__descr">
+                        Список пользователей
+                    </p>
+                    <ul class="share-container__list"></ul>
+                </div>
+                <div class="share-container__right">
+                    <form class="share-container__form">
+                        <label class="share-container__label">
+                            Введите email пользователя
+                            <input class="share-container__input" type="email" placeholder="Email" name="email" autocomplete="off">
+                        </label>
+                        <button class="share-container__btn" type="submit">
+                            Добавить пользователя
+                        </button>
+                    </form>
+                </div>
+            </div>
         </div>
         <!-- Подложка под модальным окном -->
         <div class="overlay" id="overlay-modal"></div>

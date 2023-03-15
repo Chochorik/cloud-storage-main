@@ -501,4 +501,81 @@ class User {
             die();
         }
     }
+
+    // получаем id пользователя, которому хотим открыть доступ к файлу
+    public function getUserByEmail()
+    {
+        session_start();
+
+        if (!$this->checkAuth($_SESSION)) {
+            $response = [
+                "status" => false,
+                "message" => 'Необходимо авторизоваться!'
+            ];
+            echo json_encode($response);
+            die(http_response_code(403));
+        }
+
+        // получаем информацию с формы
+        $input = json_decode(file_get_contents('php://input'), true);
+
+        $email = trim($input['email']); // email с формы
+
+        if ($email === '') {
+            $response = [
+                "status" => false,
+                "message" => 'Поле не должно быть пустым!'
+            ];
+            echo json_encode($response);
+            die();
+        }
+
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $response = [
+                "status" => false,
+                "message" => 'Неверный формат почты!'
+            ];
+            echo json_encode($response);
+            die();
+        }
+
+        // ищем пользователя с такой почтой
+        $findUser = $this->connection->prepare("SELECT * FROM `users_list` WHERE `email` = :email");
+        $findUser->bindValue('email', $email);
+        $findUser->execute();
+
+        $result = $findUser->fetch(\PDO::FETCH_ASSOC);
+
+        if (empty($result)) {
+            $response = [
+                "status" => false,
+                "message" => 'Пользователь не найден'
+            ];
+            echo json_encode($response);
+            die();
+        }
+
+        $userId = $result['id'];
+
+        $response = [
+            "status" => true,
+            "message" => 'Подождите...',
+            "id" => $userId
+        ];
+        echo json_encode($response);
+    }
+
+    // проверка на авторизованность
+    protected function checkAuth(array $array) : bool
+    {
+        if (isset($array['authorized'])) {
+            if (!$array['authorized']) {
+                return false;
+            }
+        } else {
+            return false;
+        }
+
+        return true;
+    }
 }

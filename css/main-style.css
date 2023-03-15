@@ -37,7 +37,8 @@
 }
 
 .header__admin-panel,
-.header__back {
+.header__back,
+.header__shared {
     margin-right: 20px;
     color: var(--white-color);
 }
@@ -294,7 +295,8 @@
 .modal-rename-dir__title,
 .modal-delete-file__title,
 .modal-rename-file__title,
-.modal-move-file__title {
+.modal-move-file__title,
+.modal-share-file__title {
     color: var(--darkest-color);
 }
 
@@ -308,7 +310,8 @@
 
 .modal-create-dir__label,
 .modal-rename-dir__label,
-.modal-rename-file__label {
+.modal-rename-file__label,
+.share-container__label {
     width: 100%;
     color: var(--dark-color);
     margin-bottom: 40px;
@@ -316,7 +319,8 @@
 
 .modal-create-dir__input,
 .modal-rename-dir__input,
-.modal-rename-file__input {
+.modal-rename-file__input,
+.share-container__input {
     margin-top: 10px;
     min-width: 400px;
     height: 40px;
@@ -337,7 +341,8 @@
 .modal-rename-dir__btn,
 .modal-delete-file__sumbit,
 .modal-rename-file__btn,
-.modal-move-file__btn {
+.modal-move-file__btn,
+.share-container__btn {
     padding: 10px 40px;
     color: var(--white-color);
     background-color: var(--usual-color);
@@ -523,7 +528,8 @@
 /* modal rename dir */
 .modal-rename-dir,
 .modal-rename-file,
-.modal-move-file {
+.modal-move-file,
+.modal-share-file {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
@@ -578,4 +584,77 @@
     margin-bottom: 10px;
     font-size: 19px;
     cursor: pointer;
+}
+
+/* modal share file */
+.modal-share-file {
+    max-width: 700px;
+    min-height: 350px;
+}
+
+.modal-share-file__title,
+.modal-share-file__message {
+    margin-bottom: 15px;
+}
+
+.share-container {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    height: 100%;
+}
+
+.share-container__left {
+    display: flex;
+    flex-direction: column;
+    width: 40%;
+}
+
+.share-container__right {
+    display: flex;
+    flex-direction: column;
+    width: 60%;
+}
+
+.share-container__list {
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    max-width: 70%;
+    height: 100%;
+}
+
+.share-container__list > li:not(:last-child) {
+    margin-bottom: 10px;
+}
+
+.share-container__form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.share-container__descr {
+    font-size: 18px;
+    color: var(--darkest-color);
+}
+
+.share-container__item {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.share-container__delete-btn {
+    width: 15px;
+    height: 15px;
+    border: 1px solid var(--dark-color);
+    border-radius: 50px;
+    background-image: url('/media/share-cross.svg');
+    background-position: center center;
+    background-size: contain;
+    background-repeat: no-repeat;
 }
