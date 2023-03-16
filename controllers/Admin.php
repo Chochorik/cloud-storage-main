@@ -8,7 +8,7 @@ class Admin {
     public function __construct()
     {
         try {
-            $this->connection = new \PDO('mysql:host=127.0.0.1;dbname=users;charset=utf8', 'root', 'root');
+            $this->connection = new \PDO('mysql:host=127.0.0.1;dbname=users;charset=utf8', 'login', 'password');
         } catch (\PDOException $exception) {
             echo json_encode($exception->getMessage());
         }
