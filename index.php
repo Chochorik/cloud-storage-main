@@ -1,6 +1,6 @@
 <?php
 
-//error_reporting(~E_WARNING & ~E_NOTICE);
+error_reporting(~E_WARNING & ~E_NOTICE);
 
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE');
@@ -11,14 +11,6 @@ if (!isset($_SESSION['authorized'])) {
 }
 
 require_once './autoload.php';
-
-use controllers\User;
-use controllers\Admin;
-use controllers\Files;
-use controllers\Directories;
-use router\Application;
-use controllers\MainController;
-use router\Router;
 
 $router = new Router();
 
