@@ -2,11 +2,14 @@
 
 require_once './vendor/autoload.php';
 
-function loadEntities($className) : void
-{
-    require_once './' . $className . '.php';
-}
 
-spl_autoload_register('loadEntities');
-
-
+spl_autoload_register(function ($class) {
+  	if ($class === 'Router' || $class === 'Application' || $class === 'Route') { 
+      	$path = $_SERVER['DOCUMENT_ROOT'] . '/router/';
+   		require_once $path . $class . '.php';
+    } else { 
+      	$path = $_SERVER['DOCUMENT_ROOT'] . '/controllers/';
+    	require_once $path . $class . '.php';
+    }
+    
+});
