@@ -1,3 +1,5 @@
+import { link } from "./link.js";
+
 (() => {
     const regForm = document.getElementById('registration__form');
           
@@ -19,7 +21,7 @@
             'password_confirm': passwordConfirm
         };
 
-        const request = await fetch('http://www.cloud-storage.local/user/registration', {
+        const request = await fetch(link + '/user/registration', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(user)

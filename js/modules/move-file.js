@@ -1,4 +1,5 @@
 import { $overlay, getPath } from "../main.js";
+import { link } from "../link.js";
 
 export default async function showFileMoveModal(id) {
     const $modal = document.querySelector('.modal-move-file'),
@@ -20,7 +21,7 @@ export default async function showFileMoveModal(id) {
 
     const currentPath = getPath(); // текущий путь
 
-    const getDirs = await fetch('http://www.cloud-storage.local/dirList');
+    const getDirs = await fetch(link + '/dirList');
     const dirsData = await getDirs.json();
 
     for (const dir of dirsData.dirList) {
@@ -62,7 +63,7 @@ export default async function showFileMoveModal(id) {
             }
         }
 
-        const request = await fetch(`http://www.cloud-storage.local/files/${$submitBtn.dataset.id}`, {
+        const request = await fetch(link + `/files/${$submitBtn.dataset.id}`, {
             method: 'PUT',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({

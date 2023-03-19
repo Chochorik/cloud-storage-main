@@ -1,4 +1,5 @@
 import createChangeBtn from "./create-change-btn.js";
+import { link } from "../link.js";
 
 export default async function createFileBtn(file) {
     const $areaForFile = document.createElement('li');
@@ -22,7 +23,7 @@ export default async function createFileBtn(file) {
     const $fileNameSpace = document.createElement('span');
     $fileNameSpace.className = 'file__btn-name';
 
-    const request = await fetch(`http://www.cloud-storage.local/files/${$btn.dataset.id}`);
+    const request = await fetch(link + `/files/${$btn.dataset.id}`);
     const data = await request.json();
 
     if (!data.status) {

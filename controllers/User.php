@@ -2,14 +2,21 @@
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
-use DB\Database;
 
 class User {
     private string $userName, $email, $pass, $passConfirm, $role;
     private string $salt;
+    private object $connection;
 
     public function __construct()
     {
+        try {
+            $this->connection = new \PDO('mysql:host=127.0.0.1;dbname=users;charset=utf8', 'login', 'password');
+        } catch (\PDOException $exception) {
+            http_response_code(418);
+            echo json_encode($exception->getMessage());
+        }
+
         $this->role = 'user';
     }
 
@@ -37,7 +44,7 @@ class User {
                     exit;
                 }
 
-                $statement = Database::getInstance()->prepare("SELECT * FROM `users_list` WHERE `login` = :login");
+                $statement = $this->connection->prepare("SELECT * FROM `users_list` WHERE `login` = :login");
                 $statement->bindValue('login', $this->userName);
 
                 $statement->execute();
@@ -367,13 +374,13 @@ class User {
                 $mail->CharSet    = "UTF-8";
                 $mail->Host       = 'ssl://smtp.gmail.com';                     //Set the SMTP server to send through
                 $mail->SMTPAuth   = true;                                   //Enable SMTP authentication
-                $mail->Username   = '1nikita.medvedev2022@gmail.com';                     //SMTP username
-                $mail->Password   = 'gpxfqjoyuimdskek';                               //SMTP password
+                $mail->Username   = 'email';                     //SMTP username
+                $mail->Password   = 'token';                               //SMTP password
                 $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;            //Enable implicit TLS encryption
                 $mail->Port       = 465;                                    //TCP port to connect to; use 587 if you have set `SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS`
 
                 //Recipients
-                $mail->setFrom('1nikita.medvedev2022@gmail.com', 'Cloud Storage');
+                $mail->setFrom('email', 'Cloud Storage');
                 $mail->addAddress($email, $result[0]['login']);     //Add a recipient
 
                 //Content

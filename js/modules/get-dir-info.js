@@ -1,9 +1,10 @@
 import createDirBtn from "./create-dir-btn.js";
 import { $mainList, $mainSection } from "../main.js";
 import createFileBtn from "./create-file-btn.js";
+import { link } from "../link.js";
 
 export default async function getDirInfo(id) {
-    const request = await fetch(`http://www.cloud-storage.local/directory/${id}`);
+    const request = await fetch(link + `/directory/${id}`);
     const data = await request.json();
 
     if (!data.status) {

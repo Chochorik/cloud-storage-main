@@ -1,3 +1,5 @@
+import { link } from "./link.js";
+
 (() => {
     const table = document.querySelector('.table');
     const $overlay = document.querySelector('.overlay');
@@ -31,7 +33,7 @@
     }
 
     async function getSortedUsers(property, direction) { // функция сортировки пользователей
-        const response = await fetch('http://www.cloud-storage.local/admin/users');
+        const response = await fetch(link + '/admin/users');
         const data = await response.json();
 
         if (data.status === true) {
@@ -47,7 +49,7 @@
     // прорисовка таблицы
     async function renderingTable() {
         // запрос на сервер для получения всех пользователей
-        const response = await fetch('http://www.cloud-storage.local/admin/users');
+        const response = await fetch(link + '/admin/users');
         const data = await response.json();
 
         if (data.status === true) {
@@ -89,7 +91,7 @@
 
             $confirmBtn.dataset.id = $button.dataset.id;
 
-            const request = await fetch(`http://www.cloud-storage.local/admin/users/${$button.dataset.id}`);
+            const request = await fetch(link + `/admin/users/${$button.dataset.id}`);
             const data = await request.json();
     
             if (data.status) {
@@ -110,7 +112,7 @@
 
             const $error = document.querySelector('.modal__message');
 
-            const updateRequest = await fetch(`http://www.cloud-storage.local/admin/users/${$confirmBtn.dataset.id}`, {
+            const updateRequest = await fetch(link + `/admin/users/${$confirmBtn.dataset.id}`, {
                 method: 'PUT',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({
@@ -170,7 +172,7 @@
         $confirmBtn.addEventListener('click', async function(e) {
             e.preventDefault();
 
-            const request = await fetch(`http://www.cloud-storage.local/admin/users/${$confirmBtn.dataset.id}`, {
+            const request = await fetch(link + `/admin/users/${$confirmBtn.dataset.id}`, {
                 method: 'DELETE'
             })
 

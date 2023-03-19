@@ -1,3 +1,5 @@
+import { link } from "./link.js";
+
 (() => {
     const recoveryForm = document.getElementById('recovery__form');
 
@@ -9,7 +11,7 @@
             'login': login
         };
 
-        const request = await fetch('http://www.cloud-storage.local/user/recovery', {
+        const request = await fetch(link + '/user/recovery', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(formData)

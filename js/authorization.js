@@ -1,3 +1,5 @@
+import { link } from "./link.js";
+
 (() => {
     const authForm = document.getElementById('auth__form');
 
@@ -13,7 +15,7 @@
             'password': password
         };
 
-        const request = await fetch('http://www.cloud-storage.local/user/authorization', {
+        const request = await fetch(link + '/user/authorization', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(user)

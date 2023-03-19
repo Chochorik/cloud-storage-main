@@ -1,8 +1,10 @@
+import { link } from "./link.js";
+
 (() => {
     async function getSharedList() {
         const $mainContainer = document.querySelector('.main__container');
 
-        const request = await fetch('http://www.cloud-storage.local/files-list/shared');
+        const request = await fetch(link + '/files-list/shared');
         const data = await request.json();
 
         const $message = document.createElement('p');

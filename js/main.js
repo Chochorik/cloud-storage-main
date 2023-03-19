@@ -1,4 +1,5 @@
 import getDirInfo from "./modules/get-dir-info.js";
+import { link } from "./link.js";
 
 export const $mainList = document.querySelector('.main__btn-list');
 export const $mainSection = document.querySelector('.main__container');
@@ -39,7 +40,7 @@ export function getPath() { // получение пути
     const $uploadMessageArea = document.querySelector('.modal-upload-file__message');
 
     async function logout() {
-        const request = await fetch('http://www.cloud-storage.local/user/logout');
+        const request = await fetch(link + '/user/logout');
 
         const data = await request.json();
 
@@ -51,7 +52,7 @@ export function getPath() { // получение пути
     }
 
     window.addEventListener('DOMContentLoaded', async function() {
-        const request = await fetch('http://www.cloud-storage.local/directory/root');
+        const request = await fetch(link + '/directory/root');
         const data = await request.json();
 
         pathId = data.rootDir[0]['dir_id'];
@@ -116,7 +117,7 @@ export function getPath() { // получение пути
         formData.append('file', fileInput);
         formData.append('path', path);
 
-        const request = await fetch('http://www.cloud-storage.local/files', {
+        const request = await fetch(link + '/files', {
             method: 'POST',
             body: formData
         });
@@ -145,7 +146,7 @@ export function getPath() { // получение пути
 
         const $messageArea = document.querySelector('.modal-create-dir__message');
 
-        const request = await fetch('http://www.cloud-storage.local/directory', {
+        const request = await fetch(link + '/directory', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({
@@ -187,7 +188,7 @@ export function getPath() { // получение пути
 
         $mainList.innerHTML = '';
 
-        const request = await fetch('http://www.cloud-storage.local/directory/root');
+        const request = await fetch(link + '/directory/root');
         const data = await request.json();
 
         pathId = data.rootDir[0]['dir_id'];

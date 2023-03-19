@@ -1,3 +1,5 @@
+import { link } from "./link.js";
+
 (() => {
     const $form = document.getElementById('recovery__form');
 
@@ -17,7 +19,7 @@
             "repeat-new-password": $repeatPass
         };
 
-        const request = await fetch(`http://www.cloud-storage.local/user/reset-password/${salt}`, {
+        const request = await fetch(link + `/user/reset-password/${salt}`, {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(newPass)

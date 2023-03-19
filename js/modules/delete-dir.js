@@ -1,4 +1,5 @@
 import { $overlay } from "../main.js";
+import { link } from "../link.js";
 
 export default async function showDeleteDirModal(id) {
     const $modal = document.querySelector('.modal-delete-dir'),
@@ -22,7 +23,7 @@ export default async function showDeleteDirModal(id) {
     $submitBtn.addEventListener('click', async function(e) {
         e.preventDefault();
 
-        const request = await fetch(`http://www.cloud-storage.local/directory/${$submitBtn.dataset.id}`, {
+        const request = await fetch(link + `/directory/${$submitBtn.dataset.id}`, {
             method: 'DELETE'
         });
         const data = await request.json();

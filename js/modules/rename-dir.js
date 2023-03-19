@@ -1,3 +1,4 @@
+import { link } from "../link.js";
 import { $overlay, getPath } from "../main.js";
 
 export default async function showRenameDirModal(id, dirName) {
@@ -33,7 +34,7 @@ export default async function showRenameDirModal(id, dirName) {
             "currentPath": getPath()
         };
 
-        const request = await fetch(`http://www.cloud-storage.local/directory/${$submitBtn.dataset.id}`, {
+        const request = await fetch(link + `/directory/${$submitBtn.dataset.id}`, {
             method: 'PUT',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(dir)

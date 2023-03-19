@@ -1,4 +1,5 @@
 import { $overlay } from "../main.js";
+import { link } from "../link.js";
 
 export default async function showShareFileModal(id) {
     const $modal = document.querySelector('.modal-share-file'),
@@ -34,7 +35,7 @@ export default async function showShareFileModal(id) {
 
         const email = $emailInput.value;
 
-        const request = await fetch('http://www.cloud-storage.local/get-user', {
+        const request = await fetch(link + '/get-user', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({
@@ -55,7 +56,7 @@ export default async function showShareFileModal(id) {
             return;
         }
 
-        const giveAccess = await fetch('http://www.cloud-storage.local/files/share', {
+        const giveAccess = await fetch(link + '/files/share', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({
@@ -86,7 +87,7 @@ export default async function showShareFileModal(id) {
 }
 
 async function createUserList(fileId, $messageArea) {
-    const getUsersList = await fetch(`http://www.cloud-storage.local/files/share/${fileId}`);
+    const getUsersList = await fetch(link + `/files/share/${fileId}`);
     const usersList = await getUsersList.json();
 
     const users = usersList.users;
@@ -122,7 +123,7 @@ async function createUserList(fileId, $messageArea) {
 }
 
 async function denyAccessForUser(userId, fileId, $messageArea) {
-    const request = await fetch('http://www.cloud-storage.local/files/deny-access', {
+    const request = await fetch(link + '/files/deny-access', {
         method: 'DELETE',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({
