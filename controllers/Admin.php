@@ -1,7 +1,5 @@
 <?php
 
-namespace controllers;
-
 class Admin {
     private object $connection;
 

@@ -1,7 +1,5 @@
 <?php
 
-namespace router;
-
 use Closure;
 
 class Route {

@@ -1,7 +1,5 @@
 <?php
 
-namespace controllers;
-
 class Files
 {
     protected object $connection;

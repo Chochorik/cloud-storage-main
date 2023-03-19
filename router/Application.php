@@ -1,7 +1,5 @@
 <?php
 
-namespace router;
-
 class Application {
     private Router $router;
 

@@ -12,14 +12,6 @@ if (!isset($_SESSION['authorized'])) {
 
 require_once './autoload.php';
 
-use controllers\User;
-use controllers\Admin;
-use controllers\Files;
-use controllers\Directories;
-use router\Application;
-use controllers\MainController;
-use router\Router;
-
 $router = new Router();
 
 // главная страница и ответ на 404 http response code

@@ -1,24 +1,15 @@
 <?php
 
-namespace controllers;
-
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
+use DB\Database;
 
 class User {
     private string $userName, $email, $pass, $passConfirm, $role;
     private string $salt;
-    private object $connection;
 
     public function __construct()
     {
-        try {
-            $this->connection = new \PDO('mysql:host=127.0.0.1;dbname=users;charset=utf8', 'root', 'root');
-        } catch (\PDOException $exception) {
-            http_response_code(418);
-            echo json_encode($exception->getMessage());
-        }
-
         $this->role = 'user';
     }
 
@@ -46,7 +37,7 @@ class User {
                     exit;
                 }
 
-                $statement = $this->connection->prepare("SELECT * FROM `users_list` WHERE `login` = :login");
+                $statement = Database::getInstance()->prepare("SELECT * FROM `users_list` WHERE `login` = :login");
                 $statement->bindValue('login', $this->userName);
 
                 $statement->execute();

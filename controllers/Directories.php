@@ -1,7 +1,5 @@
 <?php
 
-namespace controllers;
-
 class Directories extends Files {
     // создание папки
     public function createDir()

@@ -1,7 +1,5 @@
 <?php
 
-namespace controllers;
-
 class MainController {
     public function index()
     {
